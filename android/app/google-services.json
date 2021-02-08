@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "83056744689",
+    "project_id": "cmsc4303-ntruong-photomemoapp",
+    "storage_bucket": "cmsc4303-ntruong-photomemoapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:83056744689:android:4cc5e8478c92426e18f150",
+        "android_client_info": {
+          "package_name": "edu.uco.ntruong3.map.lesson3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "83056744689-39ed3i04qpcqoq4cpvipaor2mk3br95m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3UQ9R7dkQJFcyH2rc31r3_fKbQwnktV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "83056744689-39ed3i04qpcqoq4cpvipaor2mk3br95m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
