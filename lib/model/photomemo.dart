@@ -48,6 +48,22 @@ class PhotoMemo {
     };
   }
 
+  static PhotoMemo deserialize(Map<String, dynamic> doc, String docId) {
+    return PhotoMemo(
+      docId: docId,
+      createBy: doc[CREATED_BY],
+      title: doc[TITLE],
+      memo: doc[MEMO],
+      photoFilename: doc[PHOTO_FILENAME],
+      photoURL: doc[PHOTO_URL],
+      sharedWith: doc[SHARED_WITH],
+      imageLables: doc[IMAGE_LABELS],
+      timestamp: doc[TIMESTAMP] == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
+    );
+  }
+
   static String validateField(String value) {
     if (value == null || value.length < 3)
       return 'too short';
