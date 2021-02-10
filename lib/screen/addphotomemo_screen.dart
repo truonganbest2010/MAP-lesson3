@@ -18,6 +18,7 @@ class AddPhotoMemoScreen extends StatefulWidget {
 class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
   _Controller con;
   User user;
+  List<PhotoMemo> photoMemoList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   File photo;
   String progressMessage;
@@ -34,6 +35,7 @@ class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
+    photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
     return Scaffold(
       appBar: AppBar(
         actions: [IconButton(icon: Icon(Icons.check), onPressed: con.save)],
@@ -158,11 +160,22 @@ class _Controller {
               }
             });
           });
+
+      // image labels by ML
+      state.render(() => state.progressMessage = 'ML Image Labeler Started!');
+      List<String> imageLabels =
+          await FirebaseController.getImageLabels(photoFile: state.photo);
+      state.render(() => state.progressMessage = null);
+
+      //
       tempMemo.photoFilename = photoInfo[Constant.ARG_FILENAME];
       tempMemo.photoURL = photoInfo[Constant.ARG_DOWNLOADURL];
       tempMemo.timestamp = DateTime.now();
+      tempMemo.createdBy = state.user.email;
+      tempMemo.imageLables = imageLabels;
       String docId = await FirebaseController.addPhotoMemo(tempMemo);
       tempMemo.docId = docId;
+      state.photoMemoList.insert(0, tempMemo);
 
       MyDialog.circularProgressStop(state.context);
       Navigator.pop(state.context);

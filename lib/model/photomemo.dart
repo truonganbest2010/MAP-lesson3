@@ -1,6 +1,6 @@
 class PhotoMemo {
   String docId; // Firestore auto generate id
-  String createBy;
+  String createdBy;
   String title;
   String memo;
   String photoFilename; // stored at Storage
@@ -21,7 +21,7 @@ class PhotoMemo {
 
   PhotoMemo({
     this.docId,
-    this.createBy,
+    this.createdBy,
     this.memo,
     this.photoFilename,
     this.photoURL,
@@ -38,7 +38,7 @@ class PhotoMemo {
   Map<String, dynamic> serialize() {
     return <String, dynamic>{
       TITLE: this.title,
-      CREATED_BY: this.createBy,
+      CREATED_BY: this.createdBy,
       MEMO: this.memo,
       PHOTO_FILENAME: this.photoFilename,
       PHOTO_URL: this.photoURL,
@@ -51,7 +51,7 @@ class PhotoMemo {
   static PhotoMemo deserialize(Map<String, dynamic> doc, String docId) {
     return PhotoMemo(
       docId: docId,
-      createBy: doc[CREATED_BY],
+      createdBy: doc[CREATED_BY],
       title: doc[TITLE],
       memo: doc[MEMO],
       photoFilename: doc[PHOTO_FILENAME],
