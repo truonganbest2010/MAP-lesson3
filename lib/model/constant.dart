@@ -1,5 +1,5 @@
 class Constant {
-  static const DEV = false;
+  static const DEV = true;
 
   static const ARG_USER = 'user';
   static const ARG_PHOTOMEMOLIST = 'photomemo_list';

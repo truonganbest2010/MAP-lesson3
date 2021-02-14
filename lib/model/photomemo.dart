@@ -34,6 +34,35 @@ class PhotoMemo {
     this.imageLables ??= [];
   }
 
+  PhotoMemo.clone(PhotoMemo p) {
+    this.docId = p.docId;
+    this.createdBy = p.createdBy;
+    this.memo = p.memo;
+    this.photoFilename = p.photoFilename;
+    this.photoURL = p.photoURL;
+    this.timestamp = p.timestamp;
+    this.title = p.title;
+    this.sharedWith = [];
+    this.sharedWith.addAll(p.sharedWith);
+    this.imageLables = [];
+    this.imageLables.addAll(p.imageLables);
+  }
+
+  // a = b ==> a.assign(b)
+  void assign(PhotoMemo p) {
+    this.docId = p.docId;
+    this.createdBy = p.createdBy;
+    this.memo = p.memo;
+    this.photoFilename = p.photoFilename;
+    this.photoURL = p.photoURL;
+    this.timestamp = p.timestamp;
+    this.title = p.title;
+    this.sharedWith.clear();
+    this.sharedWith.addAll(p.sharedWith);
+    this.imageLables.clear();
+    this.imageLables.addAll(p.imageLables);
+  }
+
 // From Dart Object to Firestore Docs
   Map<String, dynamic> serialize() {
     return <String, dynamic>{
@@ -64,7 +93,7 @@ class PhotoMemo {
     );
   }
 
-  static String validateField(String value) {
+  static String validateTitle(String value) {
     if (value == null || value.length < 3)
       return 'too short';
     else
