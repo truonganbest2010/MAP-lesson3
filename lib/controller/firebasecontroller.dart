@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/comment.dart';
 
 class FirebaseController {
   static Future<User> signIn({@required String email, @required String password}) async {
@@ -40,7 +41,7 @@ class FirebaseController {
     UploadTask task = FirebaseStorage.instance.ref(filename).putFile(photo);
     task.snapshotEvents.listen((TaskSnapshot event) {
       double progress = event.bytesTransferred / event.totalBytes;
-      print('======= $progress');
+      // print('======= $progress');
 
       if (event.bytesTransferred == event.totalBytes) progress = null;
       listener(progress);
@@ -57,6 +58,14 @@ class FirebaseController {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COLLECTION)
         .add(photoMemo.serialize());
+
+    return ref.id;
+  }
+
+  static Future<String> addComment(Comment c) async {
+    var ref = await FirebaseFirestore.instance
+        .collection(Constant.COMMENT_COLLECTION)
+        .add(c.serialize());
     return ref.id;
   }
 
@@ -69,6 +78,20 @@ class FirebaseController {
     var result = <PhotoMemo>[];
     querySnapshot.docs.forEach((doc) {
       result.add(PhotoMemo.deserialize(doc.data(), doc.id));
+    });
+    return result;
+  }
+
+  static Future<List<Comment>> getCommentList({@required String photomemoId}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.COMMENT_COLLECTION)
+        .where(Comment.PHOTOMEMOID, isEqualTo: photomemoId)
+        .orderBy(Comment.TIMESTAMP, descending: true)
+        .get();
+
+    var result = <Comment>[];
+    querySnapshot.docs.forEach((comment) {
+      result.add(Comment.deserialize(comment.data(), comment.id));
     });
     return result;
   }
@@ -107,6 +130,7 @@ class FirebaseController {
     querySnapshot.docs.forEach((doc) {
       result.add(PhotoMemo.deserialize(doc.data(), doc.id));
     });
+
     return result;
   }
 
@@ -116,6 +140,13 @@ class FirebaseController {
         .doc(p.docId)
         .delete();
     await FirebaseStorage.instance.ref().child(p.photoFilename).delete();
+  }
+
+  static Future<void> deleteComment(Comment c) async {
+    await FirebaseFirestore.instance
+        .collection(Constant.COMMENT_COLLECTION)
+        .doc(c.commentId)
+        .delete();
   }
 
   static Future<List<PhotoMemo>> searchImage({

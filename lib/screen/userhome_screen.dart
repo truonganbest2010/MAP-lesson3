@@ -125,8 +125,9 @@ class _UserHomeState extends State<UserHomeScreen> {
                             ? photoMemoList[index].memo.substring(0, 20) + '...'
                             : photoMemoList[index].memo),
                         Text('Created By: ${photoMemoList[index].createdBy}'),
-                        Text('Created By: ${photoMemoList[index].sharedWith}'),
-                        Text('Created By: ${photoMemoList[index].timestamp}'),
+                        Text('Shared With: ${photoMemoList[index].sharedWith}'),
+                        Text('Time: ${photoMemoList[index].timestamp}'),
+                        Text('ID: ${photoMemoList[index].docId}'),
                       ],
                     ),
                     onTap: () => con.onTap(index),
@@ -191,13 +192,18 @@ class _Controller {
   }
 
   void delete() async {
+    MyDialog.circularProgressStart(state.context);
     try {
       PhotoMemo p = state.photoMemoList[delIndex];
       await FirebaseController.deletePhotoMemo(p);
+      var commentList = await FirebaseController.getCommentList(photomemoId: p.docId);
+      for (var c in commentList) await FirebaseController.deleteComment(c);
+
       state.render(() {
         state.photoMemoList.removeAt(delIndex);
         delIndex = null;
       });
+      MyDialog.circularProgressStop(state.context);
     } catch (e) {
       MyDialog.info(
         context: state.context,
@@ -211,6 +217,10 @@ class _Controller {
     try {
       List<PhotoMemo> photoMemoList =
           await FirebaseController.getPhotoMemoSharedWithMe(email: state.user.email);
+      // for (var i in photoMemoList) {
+      //   print(i.docId);
+      // }
+
       await Navigator.pushNamed(state.context, SharedWithScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
