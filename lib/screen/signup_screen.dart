@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpState extends State<SignUpScreen> {
   _Controller con;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +43,15 @@ class _SignUpState extends State<SignUpScreen> {
                 Text(
                   'Create an account',
                   style: Theme.of(context).textTheme.headline5,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    hintText: 'Name',
+                  ),
+                  keyboardType: TextInputType.name,
+                  autocorrect: false,
+                  validator: con.validateName,
+                  onSaved: con.saveName,
                 ),
                 TextFormField(
                   decoration: InputDecoration(
@@ -100,6 +111,7 @@ class _Controller {
   String email, password, passwordConfirm;
 
   String passwordErrorMessage;
+  Profile tempProfile = Profile();
 
   void createAccount() async {
     if (!state.formKey.currentState.validate()) return;
@@ -112,16 +124,36 @@ class _Controller {
       state.render(() => passwordErrorMessage = 'passwords do not match');
       return;
     }
+    MyDialog.circularProgressStart(state.context);
 
     try {
       await FirebaseController.createAccount(email: email, password: password);
+
+      tempProfile.createdBy = email;
+      var docId = await FirebaseController.createProfile(tempProfile);
+      tempProfile.profileID = docId;
+      MyDialog.circularProgressStop(state.context);
+
       MyDialog.info(
           context: state.context,
           title: 'Account created!',
           content: 'Go to Sign in to use the app');
     } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+
       MyDialog.info(context: state.context, title: 'Cannot create', content: '$e');
     }
+  }
+
+  String validateName(String value) {
+    if (value == null || value.length < 1)
+      return 'Enter your name';
+    else
+      return null;
+  }
+
+  void saveName(String value) {
+    tempProfile.name = value;
   }
 
   String validateEmail(String value) {

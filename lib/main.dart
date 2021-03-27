@@ -2,9 +2,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/screen/addphotomemo_screen.dart';
+import 'package:lesson3/screen/addprofilephoto_screen.dart';
 import 'package:lesson3/screen/detailedview_screen.dart';
+import 'package:lesson3/screen/onephotomemodetailed_screen.dart';
+import 'package:lesson3/screen/oneprofile_screen.dart';
+import 'package:lesson3/screen/settings_screen.dart';
 import 'package:lesson3/screen/sharedwith_screen.dart';
-import 'package:lesson3/screen/sharedwithdetailed_screen.dart';
 import 'package:lesson3/screen/signIn_screen.dart';
 import 'package:lesson3/screen/signup_screen.dart';
 import 'package:lesson3/screen/userhome_screen.dart';
@@ -32,7 +35,10 @@ class PhotoMemoApp extends StatelessWidget {
         DetailedViewScreen.routeName: (context) => DetailedViewScreen(),
         SignUpScreen.routeName: (context) => SignUpScreen(),
         SharedWithScreen.routeName: (context) => SharedWithScreen(),
-        SharedWithDetailedScreen.routeName: (context) => SharedWithDetailedScreen(),
+        OnePhotoMemoDetailedScreen.routeName: (context) => OnePhotoMemoDetailedScreen(),
+        SettingsScreen.routeName: (context) => SettingsScreen(),
+        OneProfileScreen.routeName: (context) => OneProfileScreen(),
+        AddProfilePhotoScreen.routeName: (context) => AddProfilePhotoScreen(),
       },
     );
   }

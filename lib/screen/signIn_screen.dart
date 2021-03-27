@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/signup_screen.dart';
 import 'package:lesson3/screen/userhome_screen.dart';
@@ -100,6 +101,7 @@ class _Controller {
   _SignInState state;
   _Controller(this.state);
   String email, password;
+  Profile profile = Profile();
 
   String validateEmail(String value) {
     if (value.contains('@') && value.contains('.'))
@@ -143,13 +145,26 @@ class _Controller {
     }
 
     try {
+      profile = await FirebaseController.getProfileDatabase(email: email);
+      // print(profile.name);
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context,
+        title: 'Firestore getProfileDatabase Error',
+        content: '$e',
+      );
+    }
+
+    try {
       List<PhotoMemo> photoMemoList =
           await FirebaseController.getPhotoMemoList(email: user.email);
-      print('====== photoMemoList: ${photoMemoList.length}');
+      // print('====== photoMemoList: ${photoMemoList.length}');
       MyDialog.circularProgressStop(state.context);
       Navigator.pushNamed(state.context, UserHomeScreen.routeName, arguments: {
         Constant.ARG_USER: user,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
+        Constant.ARG_PROFILE: profile,
       });
     } catch (e) {
       MyDialog.circularProgressStop(state.context);

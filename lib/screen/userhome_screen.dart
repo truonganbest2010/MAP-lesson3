@@ -1,14 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
+import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/myView/myimage.dart';
+import 'package:lesson3/screen/settings_screen.dart';
 import 'package:lesson3/screen/sharedwith_screen.dart';
 
 import 'addphotomemo_screen.dart';
 import 'detailedview_screen.dart';
+import 'onephotomemodetailed_screen.dart';
+import 'oneprofile_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   static const routeName = '/userHomeScreen';
@@ -22,6 +27,7 @@ class _UserHomeState extends State<UserHomeScreen> {
   _Controller con;
   User user;
   List<PhotoMemo> photoMemoList;
+  Profile profile;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   @override
@@ -36,7 +42,9 @@ class _UserHomeState extends State<UserHomeScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
+    profile ??= args[Constant.ARG_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+
     return WillPopScope(
       onWillPop: () => Future.value(false), // Android 's back button disabled
       child: Scaffold(
@@ -75,8 +83,24 @@ class _UserHomeState extends State<UserHomeScreen> {
           child: ListView(
             children: [
               UserAccountsDrawerHeader(
-                  currentAccountPicture: Icon(Icons.person, size: 100.0),
-                  accountName: Text('Not set'),
+                  currentAccountPicture: FlatButton(
+                    minWidth: 200.0,
+                    child: profile.profilePhotoURL == null
+                        ? Icon(Icons.person, size: 40.0)
+                        : MyImage.network(
+                            url: profile.profilePhotoURL,
+                            context: context,
+                          ),
+                    onPressed: () async {
+                      await Navigator.pushNamed(context, OneProfileScreen.routeName,
+                          arguments: {
+                            Constant.ARG_USER: user,
+                            Constant.ARG_PROFILE: profile,
+                          });
+                      render(() {});
+                    },
+                  ),
+                  accountName: Text('Hi, ' + profile.name),
                   accountEmail: Text(user.email)),
               ListTile(
                 leading: Icon(Icons.people),
@@ -86,7 +110,12 @@ class _UserHomeState extends State<UserHomeScreen> {
               ListTile(
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
-                onTap: null, // con.settings,
+                onTap: () {
+                  Navigator.pushNamed(context, SettingsScreen.routeName, arguments: {
+                    Constant.ARG_USER: user,
+                    Constant.ARG_PROFILE: profile,
+                  });
+                }, // con.settings,
               ),
               ListTile(
                 leading: Icon(Icons.exit_to_app),
@@ -101,37 +130,99 @@ class _UserHomeState extends State<UserHomeScreen> {
           onPressed: con.addButton,
         ),
         body: photoMemoList.length == 0
-            ? Text(
-                'No PhotoMemos Found!',
-                style: Theme.of(context).textTheme.headline5,
+            ? Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      color: Colors.black),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      'You haven\'t shared anything',
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                  ),
+                ),
               )
             : ListView.builder(
                 itemCount: photoMemoList.length,
-                itemBuilder: (BuildContext context, int index) => Container(
-                  color: con.delIndex != null && con.delIndex == index
-                      ? Theme.of(context).highlightColor
-                      : Theme.of(context).scaffoldBackgroundColor,
-                  child: ListTile(
-                    leading: MyImage.network(
-                      url: photoMemoList[index].photoURL,
-                      context: context,
-                    ),
-                    trailing: Icon(Icons.keyboard_arrow_right),
-                    title: Text(photoMemoList[index].title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(photoMemoList[index].memo.length >= 20
-                            ? photoMemoList[index].memo.substring(0, 20) + '...'
-                            : photoMemoList[index].memo),
-                        Text('Created By: ${photoMemoList[index].createdBy}'),
-                        Text('Shared With: ${photoMemoList[index].sharedWith}'),
-                        Text('Time: ${photoMemoList[index].timestamp}'),
-                        Text('ID: ${photoMemoList[index].docId}'),
-                      ],
-                    ),
-                    onTap: () => con.onTap(index),
-                    onLongPress: () => con.onLongPress(index),
+                itemBuilder: (BuildContext context, int index) => Card(
+                  elevation: 7.0,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 15.0,
+                      ),
+                      Container(
+                        color: con.delIndex != null && con.delIndex == index
+                            ? Theme.of(context).highlightColor
+                            : Theme.of(context).scaffoldBackgroundColor,
+                        child: ListTile(
+                          leading: MyImage.network(
+                            url: photoMemoList[index].photoURL,
+                            context: context,
+                          ),
+                          trailing: Icon(Icons.keyboard_arrow_right),
+                          title: Text(photoMemoList[index].title,
+                              style: Theme.of(context).textTheme.headline4),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(photoMemoList[index].memo.length >= 20
+                                    ? photoMemoList[index].memo.substring(0, 20) + '...'
+                                    : photoMemoList[index].memo),
+                                Text('Created By: ${photoMemoList[index].createdBy}'),
+                                Text('Shared With: ${photoMemoList[index].sharedWith}'),
+                                Text('Time: ${photoMemoList[index].timestamp}'),
+                                Text('ID: ${photoMemoList[index].docId}'),
+                              ],
+                            ),
+                          ),
+                          onTap: () => con.onTap(index),
+                          onLongPress: () => con.onLongPress(index),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: FlatButton(
+                              onPressed: () {},
+                              child: Icon(Icons.thumb_up),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: FlatButton(
+                              onPressed: () async {
+                                try {
+                                  List<Comment> commentList =
+                                      await FirebaseController.getCommentList(
+                                          photomemoId: photoMemoList[index].docId);
+
+                                  await Navigator.pushNamed(
+                                      context, OnePhotoMemoDetailedScreen.routeName,
+                                      arguments: {
+                                        Constant.ARG_USER: user,
+                                        Constant.ARG_ONE_PHOTOMEMO: photoMemoList[index],
+                                        Constant.ARG_COMMENTLIST: commentList,
+                                      });
+                                } catch (e) {
+                                  MyDialog.info(
+                                    context: context,
+                                    title: 'Comment List Load error',
+                                    content: '$e',
+                                  );
+                                }
+                              },
+                              child: Icon(Icons.message),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),

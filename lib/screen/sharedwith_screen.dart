@@ -5,7 +5,7 @@ import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
-import 'package:lesson3/screen/sharedwithdetailed_screen.dart';
+import 'package:lesson3/screen/onephotomemodetailed_screen.dart';
 
 import 'myView/myimage.dart';
 
@@ -59,7 +59,7 @@ class _SharedWithState extends State<SharedWithScreen> {
                                 photomemoId: photoMemoList[index].docId);
 
                         await Navigator.pushNamed(
-                            context, SharedWithDetailedScreen.routeName,
+                            context, OnePhotoMemoDetailedScreen.routeName,
                             arguments: {
                               Constant.ARG_USER: user,
                               Constant.ARG_ONE_PHOTOMEMO: photoMemoList[index],
