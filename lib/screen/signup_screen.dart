@@ -35,68 +35,90 @@ class _SignUpState extends State<SignUpScreen> {
           top: 15.0,
           left: 15.0,
         ),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Text(
-                  'Create an account',
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Name',
-                  ),
-                  keyboardType: TextInputType.name,
-                  autocorrect: false,
-                  validator: con.validateName,
-                  onSaved: con.saveName,
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  autocorrect: false,
-                  validator: con.validateEmail,
-                  onSaved: con.saveEmail,
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                  ),
-                  obscureText: true,
-                  autocorrect: false,
-                  validator: con.validatePassword,
-                  onSaved: con.savePassword,
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Password confirm',
-                  ),
-                  obscureText: true,
-                  autocorrect: false,
-                  validator: con.validatePassword,
-                  onSaved: con.savePasswordConfirm,
-                ),
-                con.passwordErrorMessage == null
-                    ? SizedBox(height: 1.0)
-                    : Text(
-                        con.passwordErrorMessage,
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 14.0,
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            formKey.currentState.reset();
+          },
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Text(
+                  //   'Create an account',
+                  //   style: Theme.of(context).textTheme.headline5,
+                  // ),
+                  Container(
+                    margin:
+                        EdgeInsets.only(left: 5.0, top: 50.0, right: 20.0, bottom: 20.0),
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Name',
+                          ),
+                          keyboardType: TextInputType.name,
+                          autocorrect: false,
+                          validator: con.tempProfile.validateName,
+                          onSaved: con.saveName,
                         ),
-                      ),
-                RaisedButton(
-                  onPressed: con.createAccount,
-                  child: Text(
-                    'Create',
-                    style: Theme.of(context).textTheme.button,
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Email',
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          autocorrect: false,
+                          validator: con.validateEmail,
+                          onSaved: con.saveEmail,
+                        ),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Password',
+                          ),
+                          obscureText: true,
+                          autocorrect: false,
+                          validator: con.validatePassword,
+                          onSaved: con.savePassword,
+                        ),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Password confirm',
+                          ),
+                          obscureText: true,
+                          autocorrect: false,
+                          validator: con.validatePassword,
+                          onSaved: con.savePasswordConfirm,
+                        ),
+                        con.passwordErrorMessage == null
+                            ? SizedBox(height: 1.0)
+                            : Text(
+                                con.passwordErrorMessage,
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14.0,
+                                ),
+                              ),
+                      ],
+                    ),
                   ),
-                )
-              ],
+
+                  SizedBox(height: 10.0),
+                  RawMaterialButton(
+                    onPressed: con.createAccount,
+                    elevation: 7.0,
+                    fillColor: Colors.black,
+                    child: Text(
+                      'Create',
+                      style: Theme.of(context).textTheme.button,
+                    ),
+                    padding: EdgeInsets.all(15.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -130,6 +152,7 @@ class _Controller {
       await FirebaseController.createAccount(email: email, password: password);
 
       tempProfile.createdBy = email;
+      tempProfile.admin = false;
       var docId = await FirebaseController.createProfile(tempProfile);
       tempProfile.profileID = docId;
       MyDialog.circularProgressStop(state.context);
@@ -143,13 +166,6 @@ class _Controller {
 
       MyDialog.info(context: state.context, title: 'Cannot create', content: '$e');
     }
-  }
-
-  String validateName(String value) {
-    if (value == null || value.length < 1)
-      return 'Enter your name';
-    else
-      return null;
   }
 
   void saveName(String value) {

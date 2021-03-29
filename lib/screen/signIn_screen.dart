@@ -4,6 +4,7 @@ import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
+import 'package:lesson3/screen/home_screen.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/signup_screen.dart';
 import 'package:lesson3/screen/userhome_screen.dart';
@@ -31,64 +32,95 @@ class _SignInState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Sign In'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 10.0, left: 15.0),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Center(
-                  child: Text(
-                    'PhotoMemo',
-                    style: TextStyle(
-                      fontFamily: 'Pacifico',
-                      fontSize: 40.0,
+      // appBar: AppBar(
+      //   title: Text('Sign In'),
+      // ),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          formKey.currentState.reset();
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(top: 100.0, left: 15.0),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  children: [
+                    Center(
+                      child: Text(
+                        'PhotoMemo',
+                        style: TextStyle(
+                          fontFamily: 'Pacifico',
+                          fontSize: 40.0,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(
+                      'Sign in, please!',
+                      style: TextStyle(
+                        fontFamily: 'Pacifico',
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(left: 5.0, right: 20.0),
+                      decoration: BoxDecoration(),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: 'Email',
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            autocorrect: false,
+                            validator: con.validateEmail,
+                            onSaved: con.saveEmail,
+                          ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: 'Password',
+                            ),
+                            obscureText: true,
+                            autocorrect: false,
+                            validator: con.validatePassword,
+                            onSaved: con.savePassword,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 50.0,
+                    ),
+                    RawMaterialButton(
+                      onPressed: con.signIn,
+                      elevation: 7.0,
+                      fillColor: Colors.black,
+                      child: Text('Sign In', style: Theme.of(context).textTheme.button),
+                      padding: EdgeInsets.all(15.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5.0,
+                    ),
+                    RawMaterialButton(
+                      onPressed: con.signUp,
+                      elevation: 7.0,
+                      fillColor: Colors.black,
+                      child: Text(
+                        'Create a new account',
+                        style: Theme.of(context).textTheme.button,
+                      ),
+                      padding: EdgeInsets.all(15.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Sign in, please!',
-                  style: TextStyle(
-                    fontFamily: 'Pacifico',
-                  ),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  autocorrect: false,
-                  validator: con.validateEmail,
-                  onSaved: con.saveEmail,
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                  ),
-                  obscureText: true,
-                  autocorrect: false,
-                  validator: con.validatePassword,
-                  onSaved: con.savePassword,
-                ),
-                RaisedButton(
-                  onPressed: con.signIn,
-                  child: Text('Sign In', style: Theme.of(context).textTheme.button),
-                ),
-                SizedBox(
-                  height: 15.0,
-                ),
-                RaisedButton(
-                  onPressed: con.signUp,
-                  child: Text(
-                    'Create a new account',
-                    style: Theme.of(context).textTheme.button,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -107,7 +139,7 @@ class _Controller {
     if (value.contains('@') && value.contains('.'))
       return null;
     else
-      return 'invalid email address';
+      return 'Invalid email address';
   }
 
   void saveEmail(String value) {
@@ -116,7 +148,7 @@ class _Controller {
 
   String validatePassword(String value) {
     if (value.length < 6)
-      return 'too short';
+      return 'Too short';
     else
       return null;
   }
@@ -145,8 +177,7 @@ class _Controller {
     }
 
     try {
-      profile = await FirebaseController.getProfileDatabase(email: email);
-      // print(profile.name);
+      profile = await FirebaseController.getOneProfileDatabase(email: email);
     } catch (e) {
       MyDialog.circularProgressStop(state.context);
       MyDialog.info(
@@ -159,12 +190,11 @@ class _Controller {
     try {
       List<PhotoMemo> photoMemoList =
           await FirebaseController.getPhotoMemoList(email: user.email);
-      // print('====== photoMemoList: ${photoMemoList.length}');
       MyDialog.circularProgressStop(state.context);
-      Navigator.pushNamed(state.context, UserHomeScreen.routeName, arguments: {
+      Navigator.pushNamed(state.context, HomeScreen.routeName, arguments: {
         Constant.ARG_USER: user,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
-        Constant.ARG_PROFILE: profile,
+        Constant.ARG_ONE_PROFILE: profile,
       });
     } catch (e) {
       MyDialog.circularProgressStop(state.context);
@@ -177,7 +207,6 @@ class _Controller {
   }
 
   void signUp() {
-    //
     Navigator.pushNamed(state.context, SignUpScreen.routeName);
   }
 }

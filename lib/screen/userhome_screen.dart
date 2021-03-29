@@ -7,13 +7,10 @@ import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/myView/myimage.dart';
-import 'package:lesson3/screen/settings_screen.dart';
-import 'package:lesson3/screen/sharedwith_screen.dart';
 
 import 'addphotomemo_screen.dart';
 import 'detailedview_screen.dart';
 import 'onephotomemodetailed_screen.dart';
-import 'oneprofile_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   static const routeName = '/userHomeScreen';
@@ -29,6 +26,7 @@ class _UserHomeState extends State<UserHomeScreen> {
   List<PhotoMemo> photoMemoList;
   Profile profile;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  bool editToggle = false;
 
   @override
   void initState() {
@@ -42,14 +40,22 @@ class _UserHomeState extends State<UserHomeScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_PROFILE];
+    profile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
 
-    return WillPopScope(
-      onWillPop: () => Future.value(false), // Android 's back button disabled
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        editToggle = false;
+        render(() => con.delIndex = null);
+      },
       child: Scaffold(
         appBar: AppBar(
-          // title: Text('User Home'),
+          title: Text('Home',
+              style: TextStyle(
+                fontFamily: "Pacifico",
+                fontSize: 30.0,
+              )),
           actions: [
             con.delIndex != null
                 ? IconButton(icon: Icon(Icons.cancel), onPressed: con.cancelDelete)
@@ -58,11 +64,18 @@ class _UserHomeState extends State<UserHomeScreen> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Container(
-                        width: MediaQuery.of(context).size.width * 0.7,
+                        width: MediaQuery.of(context).size.width * 0.4,
                         child: TextFormField(
                           decoration: InputDecoration(
+                            enabled: editToggle,
+                            border: OutlineInputBorder(
+                              borderRadius: const BorderRadius.all(
+                                const Radius.circular(30.0),
+                              ),
+                            ),
                             hintText: 'Search',
-                            fillColor: Theme.of(context).backgroundColor,
+                            fillColor:
+                                Colors.grey[900], // Theme.of(context).backgroundColor,
                             filled: true,
                           ),
                           autocorrect: true,
@@ -73,57 +86,16 @@ class _UserHomeState extends State<UserHomeScreen> {
                   ),
             con.delIndex != null
                 ? IconButton(icon: Icon(Icons.delete), onPressed: con.delete)
-                : IconButton(
-                    icon: Icon(Icons.search),
-                    onPressed: con.search,
-                  ),
+                : editToggle == true
+                    ? IconButton(
+                        icon: Icon(Icons.check),
+                        onPressed: con.search,
+                      )
+                    : IconButton(
+                        icon: Icon(Icons.search),
+                        onPressed: con.search,
+                      ),
           ],
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              UserAccountsDrawerHeader(
-                  currentAccountPicture: FlatButton(
-                    minWidth: 200.0,
-                    child: profile.profilePhotoURL == null
-                        ? Icon(Icons.person, size: 40.0)
-                        : MyImage.network(
-                            url: profile.profilePhotoURL,
-                            context: context,
-                          ),
-                    onPressed: () async {
-                      await Navigator.pushNamed(context, OneProfileScreen.routeName,
-                          arguments: {
-                            Constant.ARG_USER: user,
-                            Constant.ARG_PROFILE: profile,
-                          });
-                      render(() {});
-                    },
-                  ),
-                  accountName: Text('Hi, ' + profile.name),
-                  accountEmail: Text(user.email)),
-              ListTile(
-                leading: Icon(Icons.people),
-                title: Text('Shared With Me'),
-                onTap: con.sharedWithMe,
-              ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Settings'),
-                onTap: () {
-                  Navigator.pushNamed(context, SettingsScreen.routeName, arguments: {
-                    Constant.ARG_USER: user,
-                    Constant.ARG_PROFILE: profile,
-                  });
-                }, // con.settings,
-              ),
-              ListTile(
-                leading: Icon(Icons.exit_to_app),
-                title: Text('Sign Out'),
-                onTap: con.signOut,
-              ),
-            ],
-          ),
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
@@ -146,83 +118,96 @@ class _UserHomeState extends State<UserHomeScreen> {
               )
             : ListView.builder(
                 itemCount: photoMemoList.length,
-                itemBuilder: (BuildContext context, int index) => Card(
-                  elevation: 7.0,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 15.0,
-                      ),
-                      Container(
-                        color: con.delIndex != null && con.delIndex == index
-                            ? Theme.of(context).highlightColor
-                            : Theme.of(context).scaffoldBackgroundColor,
-                        child: ListTile(
-                          leading: MyImage.network(
-                            url: photoMemoList[index].photoURL,
-                            context: context,
-                          ),
-                          trailing: Icon(Icons.keyboard_arrow_right),
-                          title: Text(photoMemoList[index].title,
-                              style: Theme.of(context).textTheme.headline4),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(photoMemoList[index].memo.length >= 20
-                                    ? photoMemoList[index].memo.substring(0, 20) + '...'
-                                    : photoMemoList[index].memo),
-                                Text('Created By: ${photoMemoList[index].createdBy}'),
-                                Text('Shared With: ${photoMemoList[index].sharedWith}'),
-                                Text('Time: ${photoMemoList[index].timestamp}'),
-                                Text('ID: ${photoMemoList[index].docId}'),
-                              ],
-                            ),
-                          ),
-                          onTap: () => con.onTap(index),
-                          onLongPress: () => con.onLongPress(index),
+                itemBuilder: (BuildContext context, int index) => Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      shape: BoxShape.rectangle,
+                      color: con.delIndex != null && con.delIndex == index
+                          ? Theme.of(context).highlightColor
+                          : Colors.black,
+                      border: Border.all(color: Colors.black),
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 15.0,
                         ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: FlatButton(
-                              onPressed: () {},
-                              child: Icon(Icons.thumb_up),
-                            ),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                            shape: BoxShape.rectangle,
+                            color: con.delIndex != null && con.delIndex == index
+                                ? Theme.of(context).highlightColor
+                                : Theme.of(context).scaffoldBackgroundColor,
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: FlatButton(
-                              onPressed: () async {
-                                try {
-                                  List<Comment> commentList =
-                                      await FirebaseController.getCommentList(
-                                          photomemoId: photoMemoList[index].docId);
+                          child: ListTile(
+                            // Each item
 
-                                  await Navigator.pushNamed(
-                                      context, OnePhotoMemoDetailedScreen.routeName,
-                                      arguments: {
-                                        Constant.ARG_USER: user,
-                                        Constant.ARG_ONE_PHOTOMEMO: photoMemoList[index],
-                                        Constant.ARG_COMMENTLIST: commentList,
-                                      });
-                                } catch (e) {
-                                  MyDialog.info(
-                                    context: context,
-                                    title: 'Comment List Load error',
-                                    content: '$e',
-                                  );
-                                }
-                              },
-                              child: Icon(Icons.message),
+                            leading: MyImage.network(
+                              url: photoMemoList[index].photoURL,
+                              context: context,
                             ),
+                            trailing: IconButton(
+                              onPressed: () => con.onTap(index),
+                              icon: Icon(Icons.settings),
+                            ),
+                            title: Text(photoMemoList[index].title,
+                                style: Theme.of(context).textTheme.headline4),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(photoMemoList[index].memo.length >= 20
+                                      ? photoMemoList[index].memo.substring(0, 20) + '...'
+                                      : photoMemoList[index].memo),
+                                  Text('Created By: ${photoMemoList[index].createdBy}'),
+                                  Text('Shared With: ${photoMemoList[index].sharedWith}'),
+                                  Text('Time: ${photoMemoList[index].timestamp}'),
+                                ],
+                              ),
+                            ),
+                            onTap: () => con.checkComment(index),
+                            onLongPress: () => con.onLongPress(index),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: RawMaterialButton(
+                                  onPressed: () {},
+                                  elevation: 7.0,
+                                  fillColor: Colors.black,
+                                  child: Icon(Icons.thumb_up),
+                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0)),
+                                ),
+                              ),
+                              SizedBox(width: 4.0),
+                              Expanded(
+                                flex: 1,
+                                child: RawMaterialButton(
+                                  onPressed: () =>
+                                      con.checkComment(index), // Check comment
+                                  elevation: 7.0,
+                                  fillColor: Colors.black,
+                                  child: Icon(Icons.message),
+                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -236,17 +221,6 @@ class _Controller {
   _Controller(this.state);
   int delIndex;
   String keyString;
-
-  void signOut() async {
-    try {
-      await FirebaseController.signOut();
-    } catch (e) {
-      // do nothing
-    }
-
-    Navigator.of(state.context).pop(); // pop the drawer
-    Navigator.of(state.context).pop(); // pop user home screen
-  }
 
   void addButton() async {
     await Navigator.pushNamed(
@@ -287,8 +261,7 @@ class _Controller {
     try {
       PhotoMemo p = state.photoMemoList[delIndex];
       await FirebaseController.deletePhotoMemo(p);
-      var commentList = await FirebaseController.getCommentList(photomemoId: p.docId);
-      for (var c in commentList) await FirebaseController.deleteComment(c);
+      await FirebaseController.deleteComment(p.docId);
 
       state.render(() {
         state.photoMemoList.removeAt(delIndex);
@@ -304,56 +277,58 @@ class _Controller {
     }
   }
 
-  void sharedWithMe() async {
-    try {
-      List<PhotoMemo> photoMemoList =
-          await FirebaseController.getPhotoMemoSharedWithMe(email: state.user.email);
-      // for (var i in photoMemoList) {
-      //   print(i.docId);
-      // }
-
-      await Navigator.pushNamed(state.context, SharedWithScreen.routeName, arguments: {
-        Constant.ARG_USER: state.user,
-        Constant.ARG_PHOTOMEMOLIST: photoMemoList,
-      });
-      Navigator.pop(state.context);
-    } catch (e) {
-      MyDialog.info(
-        context: state.context,
-        title: 'get Shared PhotoMemo error',
-        content: '$e',
-      );
-    }
-  }
-
   void saveSearchKeyString(String value) {
     keyString = value;
   }
 
   void search() async {
     state.formKey.currentState.save();
-    var keys = keyString.split(',').toList();
-    List<String> searchKeys = [];
 
-    for (var k in keys) {
-      if (k.trim().isNotEmpty) searchKeys.add(k.trim().toLowerCase());
-    }
+    if (state.editToggle == true) {
+      var keys = keyString.split(',').toList();
+      List<String> searchKeys = [];
 
-    // print('$searchKey');
-
-    try {
-      List<PhotoMemo> results;
-      if (searchKeys.isNotEmpty) {
-        results = await FirebaseController.searchImage(
-          createdBy: state.user.email,
-          searchLabels: searchKeys,
-        );
-      } else {
-        results = await FirebaseController.getPhotoMemoList(email: state.user.email);
+      for (var k in keys) {
+        if (k.trim().isNotEmpty) searchKeys.add(k.trim().toLowerCase());
       }
-      state.render(() => state.photoMemoList = results);
+      // print('$searchKey');
+      try {
+        List<PhotoMemo> results;
+        if (searchKeys.isNotEmpty) {
+          results = await FirebaseController.searchImage(
+            createdBy: state.user.email,
+            searchLabels: searchKeys,
+          );
+        } else {
+          results = await FirebaseController.getPhotoMemoList(email: state.user.email);
+        }
+        state.render(() => state.photoMemoList = results);
+      } catch (e) {
+        MyDialog.info(context: state.context, title: 'Search error', content: '$e');
+      }
+    }
+    state.editToggle = !state.editToggle;
+    state.render(() {});
+  }
+
+  void checkComment(int index) async {
+    state.render(() => delIndex = null);
+    try {
+      List<Comment> commentList = await FirebaseController.getCommentList(
+          photomemoId: state.photoMemoList[index].docId);
+
+      await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
+          arguments: {
+            Constant.ARG_USER: state.user,
+            Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
+            Constant.ARG_COMMENTLIST: commentList,
+          });
     } catch (e) {
-      MyDialog.info(context: state.context, title: 'Search error', content: '$e');
+      MyDialog.info(
+        context: state.context,
+        title: 'Comment List Load error',
+        content: '$e',
+      );
     }
   }
 }

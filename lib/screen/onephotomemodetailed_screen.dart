@@ -47,66 +47,105 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
+          formKey.currentState.reset();
         },
         child: Column(
           children: [
             Expanded(
-              flex: 2,
-              child: Stack(
-                children: [
-                  Center(
-                    child: Container(
+              flex: 3,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        Center(
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: MyImage.network(
+                              url: photoMemo.photoURL,
+                              context: context,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0.0,
+                          bottom: 0.0,
+                          child: RawMaterialButton(
+                            onPressed: () {},
+                            elevation: 7.0,
+                            fillColor: Colors.black,
+                            child: Icon(Icons.thumb_up),
+                            padding: EdgeInsets.all(15.0),
+                            shape: CircleBorder(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(
+                      height: 20.0,
+                      color: Colors.black,
+                    ),
+                    Container(
                       height: MediaQuery.of(context).size.height * 0.4,
-                      child: MyImage.network(
-                        url: photoMemo.photoURL,
-                        context: context,
+                      width: double.infinity,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            commentList.length == 0
+                                ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 40.0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(20.0),
+                                          color: Colors.black,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Text(
+                                            'No comment',
+                                            style: Theme.of(context).textTheme.headline5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : ctrl.getCommentList(commentList, context),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    right: 15.0,
-                    bottom: 0.0,
-                    child: RaisedButton(
-                      elevation: 7.0,
-                      onPressed: () {},
-                      child: Icon(Icons.thumb_up),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Container(
-                width: double.infinity,
-                child: SingleChildScrollView(
-                  child: commentList.length == 0
-                      ? Center(
-                          child: Text(
-                            'No comment',
-                            style: Theme.of(context).textTheme.headline5,
-                          ),
-                        )
-                      : getCommentList(commentList, context),
+                  ],
                 ),
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 30.0, right: 5.0),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 5.0, left: 10.0, right: 10.0),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    Divider(
+                      height: 20.0,
+                      color: Colors.black,
+                    ),
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 4,
+                        Expanded(
+                          flex: 4,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20.0),
+                              color: Colors.black,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15.0,
+                                right: 15.0,
+                              ),
                               child: TextFormField(
                                 decoration: InputDecoration(
-                                  hintText: 'Comment',
+                                  hintText: 'Type comment . . .',
                                 ),
                                 autocorrect: true,
                                 validator: Comment.validateComment,
@@ -114,15 +153,28 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                                 controller: commentTextField,
                               ),
                             ),
-                            FlatButton(
-                              onPressed: ctrl.submit,
-                              child: Icon(Icons.send),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: RawMaterialButton(
+                            onPressed: ctrl.submit,
+                            elevation: 7.0,
+                            fillColor: Colors.black,
+                            child: Icon(
+                              Icons.send,
+                              color: Colors.blue[500],
+                              size: 30.0,
                             ),
-                          ],
+                            padding: EdgeInsets.only(
+                              left: 15.0,
+                            ),
+                            shape: CircleBorder(),
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -172,40 +224,78 @@ class _Controller {
   void clearText() {
     state.commentTextField.clear();
   }
-}
 
-Widget getCommentList(List<Comment> commentList, BuildContext context) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      for (var c in commentList)
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0),
-              child: Card(
-                color: Colors.black,
-                elevation: 7.0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${c.comment}',
-                        style: Theme.of(context).textTheme.headline6,
+  Widget getCommentList(List<Comment> commentList, BuildContext context) {
+    return Column(
+      children: [
+        for (var c in commentList)
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                          color: Colors.black,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 900 / 50,
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.height * 0.2,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      '${c.comment}',
+                                      // style: Theme.of(context).textTheme.headline6,
+                                    ),
+                                    SizedBox(height: 5.0),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      Text(
-                        '${c.timestamp}',
+                    ),
+                    SizedBox(width: 5.0),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.0),
+                          color: Colors.grey,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text('${c.timestamp.toString().substring(0, 19)}',
+                              style: TextStyle(
+                                fontSize: 10.0,
+                                color: Colors.black,
+                              )),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            SizedBox(height: 5.0),
-          ],
-        )
-    ],
-  );
+              SizedBox(height: 10.0),
+            ],
+          )
+      ],
+    );
+  }
 }

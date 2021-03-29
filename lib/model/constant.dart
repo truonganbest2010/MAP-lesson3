@@ -6,7 +6,8 @@ class Constant {
   static const ARG_PHOTOMEMOLIST = 'photomemo_list';
   static const ARG_ONE_PHOTOMEMO = 'one_photomemo';
   static const ARG_COMMENTLIST = 'comment_list';
-  static const ARG_PROFILE = 'profile';
+  static const ARG_ONE_PROFILE = 'one_profile';
+  static const ARG_PROFILE_LIST = 'profile_list';
 
 // menu
   static const SRC_CAMERA = 'Camera';

@@ -36,7 +36,7 @@ class FirebaseController {
     return ref.id;
   }
 
-  static Future<Profile> getProfileDatabase({@required String email}) async {
+  static Future<Profile> getOneProfileDatabase({@required String email}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.PROFILE_DATABASE)
         .where(Profile.CREATED_BY, isEqualTo: email)
@@ -44,6 +44,18 @@ class FirebaseController {
         .get();
     Profile result =
         Profile.deserialize(querySnapshot.docs[0].data(), querySnapshot.docs[0].id);
+    return result;
+  }
+
+  static Future<List<Profile>> getProfileList({@required String email}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PROFILE_DATABASE)
+        .where(Profile.CREATED_BY, isNotEqualTo: email)
+        .get();
+    var result = <Profile>[];
+    querySnapshot.docs.forEach((doc) {
+      result.add(Profile.deserialize(doc.data(), doc.id));
+    });
     return result;
   }
 
@@ -192,11 +204,16 @@ class FirebaseController {
     await FirebaseStorage.instance.ref().child(p.photoFilename).delete();
   }
 
-  static Future<void> deleteComment(Comment c) async {
+  static Future<void> deleteComment(String photoMemoId) async {
     await FirebaseFirestore.instance
         .collection(Constant.COMMENT_COLLECTION)
-        .doc(c.commentId)
-        .delete();
+        .where(Comment.PHOTOMEMOID, isEqualTo: photoMemoId)
+        .get()
+        .then((value) {
+      for (var doc in value.docs) {
+        doc.reference.delete();
+      }
+    });
   }
 
   static Future<void> deleteProfilePic(Profile p) async {

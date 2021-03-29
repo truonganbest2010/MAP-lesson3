@@ -27,7 +27,7 @@ class _SettingsState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_PROFILE];
+    profile ??= args[Constant.ARG_ONE_PROFILE];
     return Scaffold(
         appBar: AppBar(
           actions: [],
