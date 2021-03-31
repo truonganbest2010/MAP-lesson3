@@ -308,11 +308,15 @@ class _Controller {
     try {
       var result = <Profile>[];
       if (searchKey != "") {
-        Profile p = await FirebaseController.getOneProfileDatabase(email: searchKey);
-        result.add(p);
+        for (var p in state.profileList) {
+          if (p.createdBy == searchKey) {
+            result.add(p);
+          }
+        }
       } else {
         result = await FirebaseController.getProfileList(email: state.user.email);
       }
+
       state.render(() => state.profileList = result);
     } catch (e) {
       MyDialog.info(
