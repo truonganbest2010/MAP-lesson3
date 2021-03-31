@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
+import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/findpeople_screen.dart';
@@ -24,7 +25,8 @@ class _HomeState extends State<HomeScreen> {
   _Controller ctrl;
   User user;
   Profile profile;
-  List<PhotoMemo> photoMemoList;
+  List<Follow> followingList;
+  List<Follow> followerList;
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool editToggle = false;
@@ -41,7 +43,8 @@ class _HomeState extends State<HomeScreen> {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
     profile ??= args[Constant.ARG_ONE_PROFILE];
-    photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    followingList ??= args[Constant.ARG_FOLLOWING_LIST];
+    followerList ??= args[Constant.ARG_FOLLOWER_LIST];
     return WillPopScope(
       onWillPop: () => Future.value(false), // Android 's back button disabled
       child: Scaffold(
@@ -89,11 +92,6 @@ class _HomeState extends State<HomeScreen> {
                     style: Theme.of(context).textTheme.headline5,
                   ),
                   accountEmail: Text(user.email)),
-              // ListTile(
-              //   leading: Icon(Icons.people),
-              //   title: Text('Shared With Me'),
-              //   onTap: con.sharedWithMe,
-              // ),
               ListTile(
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
@@ -180,15 +178,37 @@ class _HomeState extends State<HomeScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10.0),
-                                    color: Colors.grey[700],
+                                    color: Colors.grey[900],
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      profile.name,
-                                      style: Theme.of(context).textTheme.headline5,
-                                    ),
-                                  ),
+                                  child: editToggle == true
+                                      ? TextFormField(
+                                          initialValue: profile.name,
+                                          decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.all(10.0),
+                                            border: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Colors.black,
+                                              ),
+                                              // borderRadius: const BorderRadius.all(
+                                              //   const Radius.circular(30.0),
+                                              // ),
+                                            ),
+                                            filled: true,
+                                          ),
+                                          style: Theme.of(context).textTheme.headline5,
+                                          keyboardType: TextInputType.name,
+                                          maxLines: 1,
+                                          enabled: editToggle,
+                                          validator: profile.validateName,
+                                          onSaved: ctrl.saveName,
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Text(
+                                            profile.name,
+                                            style: Theme.of(context).textTheme.headline5,
+                                          ),
+                                        ),
                                 ),
                                 SizedBox(height: 10.0),
                               ],
@@ -196,7 +216,7 @@ class _HomeState extends State<HomeScreen> {
                           ),
                           Positioned(
                             right: MediaQuery.of(context).size.width * 0.3,
-                            bottom: 70.0,
+                            bottom: 90.0,
                             child: Container(
                               child: PopupMenuButton<String>(
                                 color: Colors.grey[800],
@@ -247,7 +267,7 @@ class _HomeState extends State<HomeScreen> {
                                 onPressed: () {},
                                 elevation: 7.0,
                                 fillColor: Colors.black,
-                                child: Text('Follower',
+                                child: Text('Follower  ${followerList.length}',
                                     style:
                                         Theme.of(context).textTheme.button), // Follower
                                 padding: EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 20.0),
@@ -261,7 +281,7 @@ class _HomeState extends State<HomeScreen> {
                                 onPressed: () {},
                                 elevation: 7.0,
                                 fillColor: Colors.black,
-                                child: Text('Following',
+                                child: Text('Following  ${followingList.length}',
                                     style:
                                         Theme.of(context).textTheme.button), // Following
                                 padding: EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 20.0),
@@ -303,7 +323,9 @@ class _HomeState extends State<HomeScreen> {
                             ),
                             SizedBox(width: 5.0),
                             RawMaterialButton(
-                              onPressed: ctrl.goToFindPeople,
+                              onPressed: () async {
+                                ctrl.goToFindPeople();
+                              },
                               elevation: 7.0,
                               fillColor: Colors.black,
                               child: Icon(Icons.search),
@@ -336,80 +358,91 @@ class _HomeState extends State<HomeScreen> {
               Expanded(
                 flex: 2,
                 child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: editToggle == true
-                        ? TextFormField(
-                            initialValue: profile.bioDescription == null
-                                ? ''
-                                : profile.bioDescription,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(
-                                bottom: MediaQuery.of(context).size.height * 0.1,
-                                left: 20.0,
-                              ),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors.black,
-                                ),
-                                borderRadius: const BorderRadius.all(
-                                  const Radius.circular(30.0),
-                                ),
-                              ),
+                  child: Column(
+                    children: [
+                      Divider(
+                        height: 1.0,
+                        color: Colors.black,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: editToggle == true
+                            ? TextFormField(
+                                initialValue: profile.bioDescription == null
+                                    ? ''
+                                    : profile.bioDescription,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.all(20.0),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Colors.black,
+                                    ),
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(30.0),
+                                    ),
+                                  ),
 
-                              hintText: profile.bioDescription == null
-                                  ? 'Insert Bio'
-                                  : profile.bioDescription,
-                              fillColor:
-                                  Colors.grey[900], // Theme.of(context).backgroundColor,
-                              filled: true,
-                            ),
-                            autocorrect: true,
-                            enabled: editToggle,
-                            onSaved: ctrl.saveBio,
-                          )
-                        : Container(
-                            margin: EdgeInsets.all(8.0),
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height * 0.2,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(20.0),
-                              border: Border.all(
-                                color: Colors.black,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.5),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: Offset(0, 3),
-                                )
-                              ],
-                            ),
-                            child: profile.bioDescription == null
-                                ? Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Center(
-                                      child: Text(
-                                        'No Bio Description',
-                                        style: TextStyle(
-                                          fontFamily: "Pacifico",
-                                          fontSize: 20.0,
+                                  hintText: profile.bioDescription == null
+                                      ? 'Insert Bio'
+                                      : profile.bioDescription,
+                                  fillColor: Colors
+                                      .grey[900], // Theme.of(context).backgroundColor,
+                                  filled: true,
+                                ),
+                                style: TextStyle(
+                                  fontFamily: "Pacifico",
+                                  fontSize: 20.0,
+                                ),
+                                keyboardType: TextInputType.multiline,
+                                maxLines: 4,
+                                autocorrect: true,
+                                enabled: editToggle,
+                                onSaved: ctrl.saveBio,
+                              )
+                            : Container(
+                                margin: EdgeInsets.all(8.0),
+                                width: MediaQuery.of(context).size.width,
+                                height: MediaQuery.of(context).size.height * 0.2,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.5),
+                                      spreadRadius: 5,
+                                      blurRadius: 7,
+                                      offset: Offset(0, 3),
+                                    )
+                                  ],
+                                ),
+                                child: profile.bioDescription == null
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(15.0),
+                                        child: Center(
+                                          child: Text(
+                                            'No Bio Description',
+                                            style: TextStyle(
+                                              fontFamily: "Pacifico",
+                                              fontSize: 20.0,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  )
-                                : Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Text(
-                                      profile.bioDescription,
-                                      style: TextStyle(
-                                        fontFamily: "Pacifico",
-                                        fontSize: 20.0,
-                                      ),
-                                    ),
-                                  )),
+                                      )
+                                    : Padding(
+                                        padding: const EdgeInsets.all(15.0),
+                                        child: Text(
+                                          profile.bioDescription,
+                                          style: TextStyle(
+                                            fontFamily: "Pacifico",
+                                            fontSize: 20.0,
+                                          ),
+                                        ),
+                                      )),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -491,11 +524,32 @@ class _Controller {
   }
 
   void goToUserHome() async {
-    await Navigator.pushNamed(state.context, UserHomeScreen.routeName, arguments: {
-      Constant.ARG_USER: state.user,
-      Constant.ARG_PHOTOMEMOLIST: state.photoMemoList,
-      Constant.ARG_ONE_PROFILE: state.profile,
-    });
+    MyDialog.circularProgressStart(state.context);
+    try {
+      List<PhotoMemo> photoMemoList =
+          await FirebaseController.getPhotoMemoList(email: state.user.email);
+      var photoMemoIdList = <String>[];
+      photoMemoList.forEach((p) {
+        photoMemoIdList.add(p.docId);
+      });
+      Map<dynamic, dynamic> commentCounts =
+          await FirebaseController.retriveCommentsCountOfPhotoMemoList(photoMemoIdList);
+
+      await Navigator.pushNamed(state.context, UserHomeScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_PHOTOMEMOLIST: photoMemoList,
+        Constant.ARG_ONE_PROFILE: state.profile,
+        Constant.ARG_COMMENTS_COUNT: commentCounts,
+      });
+      MyDialog.circularProgressStop(state.context);
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context,
+        title: 'get PhotoMemoList error',
+        content: '$e',
+      );
+    }
     state.render(() {});
   }
 
@@ -519,14 +573,30 @@ class _Controller {
   }
 
   void goToFindPeople() async {
-    List<Profile> profileList =
-        await FirebaseController.getProfileList(email: state.user.email);
+    MyDialog.circularProgressStart(state.context);
+    try {
+      List<Profile> profileList =
+          await FirebaseController.getProfileList(email: state.user.email);
 
-    await Navigator.pushNamed(state.context, FindPeopleScreen.routeName, arguments: {
-      Constant.ARG_USER: state.user,
-      Constant.ARG_PROFILE_LIST: profileList,
-    });
-    state.render(() {});
+      await Navigator.pushNamed(state.context, FindPeopleScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_PROFILE_LIST: profileList,
+        Constant.ARG_FOLLOWING_LIST: state.followingList,
+        Constant.ARG_FOLLOWER_LIST: state.followerList,
+      });
+      MyDialog.circularProgressStop(state.context);
+      state.followingList =
+          await FirebaseController.getFollowingList(email: state.user.email);
+      state.render(() {});
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+
+      MyDialog.info(
+        context: state.context,
+        title: 'Failed',
+        content: '$e',
+      );
+    }
   }
 
   void goToSetting() async {
@@ -544,7 +614,13 @@ class _Controller {
       state.profile.bioDescription = value;
   }
 
+  void saveName(String value) {
+    state.profile.name = value;
+  }
+
   void toggleEdit() async {
+    if (!state.formKey.currentState.validate()) return;
+
     state.formKey.currentState.save();
     if (state.editToggle == true) {
       await FirebaseController.updateProfile(state.profile);

@@ -4,6 +4,7 @@ import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/onephotomemodetailed_screen.dart';
 
@@ -84,11 +85,15 @@ class _SharedWithState extends State<SharedWithScreen> {
                         ),
                         child: ListTile(
                           // Each item
-
-                          leading: MyImage.network(
-                            url: photoMemoList[index].photoURL,
-                            context: context,
-                          ),
+                          leading: Container(
+                              width: 60.0,
+                              height: 60.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                    fit: BoxFit.fitWidth,
+                                    image: NetworkImage(photoMemoList[index].photoURL)),
+                              )),
                           // trailing: Icon(Icons.keyboard_arrow_right),
                           title: Text(photoMemoList[index].title,
                               style: Theme.of(context).textTheme.headline4),
@@ -157,12 +162,15 @@ class _Controller {
     try {
       List<Comment> commentList = await FirebaseController.getCommentList(
           photomemoId: state.photoMemoList[index].docId);
+      Profile p = await FirebaseController.getOneProfileDatabase(
+          email: state.photoMemoList[index].createdBy);
 
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
             Constant.ARG_USER: state.user,
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
+            "PHOTO_MEMO_OWNER": p.name,
           });
     } catch (e) {
       MyDialog.info(

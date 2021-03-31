@@ -4,6 +4,7 @@ import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 
 import 'myView/myimage.dart';
@@ -22,6 +23,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
   User user;
   PhotoMemo photoMemo;
   List<Comment> commentList;
+  String photoMemoOwner;
 
   final commentTextField = TextEditingController();
 
@@ -39,10 +41,11 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
     user ??= args[Constant.ARG_USER];
     photoMemo ??= args[Constant.ARG_ONE_PHOTOMEMO];
     commentList ??= args[Constant.ARG_COMMENTLIST];
+    photoMemoOwner ??= args["PHOTO_MEMO_OWNER"];
     return Scaffold(
       appBar: AppBar(
         actions: [],
-        title: Text('\'s PhotoMemo'),
+        title: Text('$photoMemoOwner \'s PhotoMemo'),
       ),
       body: GestureDetector(
         onTap: () {
@@ -55,6 +58,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
               flex: 3,
               child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Stack(
                       children: [
@@ -80,6 +84,43 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20.0),
+                        color: Colors.grey[800],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin:
+                                const EdgeInsets.only(top: 10.0, left: 20.0, right: 20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${photoMemo.title}',
+                                    style: Theme.of(context).textTheme.headline5),
+                                Text(photoMemo.timestamp.toString().substring(0, 16)),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(
+                                top: 10.0, left: 20.0, right: 20.0, bottom: 10.0),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Text(photoMemo.memo,
+                                  style: Theme.of(context).textTheme.headline6),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Divider(
                       height: 20.0,
@@ -151,6 +192,8 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                                 validator: Comment.validateComment,
                                 onSaved: ctrl.saveComment,
                                 controller: commentTextField,
+                                maxLines: 2,
+                                keyboardType: TextInputType.multiline,
                               ),
                             ),
                           ),
@@ -199,6 +242,8 @@ class _Controller {
       tempComment.photoMemoId = state.photoMemo.docId;
       tempComment.createdBy = state.user.email;
       tempComment.sharedWith = state.photoMemo.createdBy;
+      Profile p = await FirebaseController.getOneProfileDatabase(email: state.user.email);
+      tempComment.profilePicURL = p.profilePhotoURL;
       String commentId = await FirebaseController.addComment(tempComment);
       tempComment.commentId = commentId;
       state.commentList.insert(0, tempComment);
@@ -248,14 +293,32 @@ class _Controller {
                           child: Row(
                             children: [
                               Expanded(
-                                child: AspectRatio(
-                                  aspectRatio: 900 / 50,
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.height * 0.2,
-                                  ),
-                                ),
+                                flex: 1,
+                                child: c.profilePicURL != null
+                                    ? Container(
+                                        width: 30.0,
+                                        height: 30.0,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                              fit: BoxFit.fitHeight,
+                                              image: NetworkImage(c.profilePicURL)),
+                                        ))
+                                    : Container(
+                                        width: 30.0,
+                                        height: 30.0,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.grey,
+                                        ),
+                                        child: Icon(
+                                          Icons.person,
+                                          size: 20,
+                                        ),
+                                      ),
                               ),
                               Expanded(
+                                flex: 7,
                                 child: Column(
                                   children: [
                                     Text(

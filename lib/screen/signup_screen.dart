@@ -38,7 +38,6 @@ class _SignUpState extends State<SignUpScreen> {
         child: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
-            formKey.currentState.reset();
           },
           child: Form(
             key: formKey,
@@ -161,6 +160,7 @@ class _Controller {
           context: state.context,
           title: 'Account created!',
           content: 'Go to Sign in to use the app');
+      state.formKey.currentState.reset();
     } catch (e) {
       MyDialog.circularProgressStop(state.context);
 

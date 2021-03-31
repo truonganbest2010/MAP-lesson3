@@ -8,6 +8,9 @@ class Constant {
   static const ARG_COMMENTLIST = 'comment_list';
   static const ARG_ONE_PROFILE = 'one_profile';
   static const ARG_PROFILE_LIST = 'profile_list';
+  static const ARG_FOLLOWING_LIST = 'following_list';
+  static const ARG_FOLLOWER_LIST = 'follower_list';
+  static const ARG_COMMENTS_COUNT = 'comments_count';
 
 // menu
   static const SRC_CAMERA = 'Camera';
@@ -18,10 +21,12 @@ class Constant {
 // firebase storage
   static const PHOTOIMAGE_FOLDER = 'photo_images';
   static const PROFILE_PIC_FOLDER = 'profile_pics';
+
 // firebase firestore
   static const PHOTOMEMO_COLLECTION = 'photoMemos';
   static const COMMENT_COLLECTION = 'commentSections';
   static const PROFILE_DATABASE = 'profileDatabase';
+  static const FOLLOW_DATABASE = 'followDatabase';
 
   static const ARG_DOWNLOADURL = 'downloadurl';
   static const ARG_FILENAME = 'filename';

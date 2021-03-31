@@ -6,6 +6,8 @@ class Profile {
   String createdBy;
   String bioDescription;
   bool admin;
+  List<dynamic> followingList;
+  Map<dynamic, dynamic> commentsCount;
 
   static const NAME = 'name';
   static const PROFILE_PHOTO_URL = 'profilePhotoURL';
@@ -13,6 +15,8 @@ class Profile {
   static const CREATED_BY = 'createdBy';
   static const BIO_DESCRIPTION = 'bioDescription';
   static const ADMIN = 'admin';
+  static const FOLLOWING_LIST = 'followingList';
+  static const COMMENTS_COUNT = 'commentsCount';
 
   Profile({
     this.profileID,
@@ -22,7 +26,12 @@ class Profile {
     this.createdBy,
     this.bioDescription,
     this.admin,
-  });
+    followingList,
+    commentsCount,
+  }) {
+    this.followingList ??= [];
+    this.commentsCount ??= {};
+  }
 
   Profile.clone(Profile p) {
     this.profileID = p.profileID;
@@ -32,6 +41,10 @@ class Profile {
     this.createdBy = p.createdBy;
     this.bioDescription = p.bioDescription;
     this.admin = p.admin;
+    this.followingList = [];
+    this.followingList.addAll(p.followingList);
+    this.commentsCount = {};
+    this.commentsCount = p.commentsCount;
   }
 
   void assign(Profile p) {
@@ -42,6 +55,9 @@ class Profile {
     this.createdBy = p.createdBy;
     this.bioDescription = p.bioDescription;
     this.admin = p.admin;
+    this.followingList = [];
+    this.followingList.addAll(p.followingList);
+    this.commentsCount = p.commentsCount;
   }
 
   Map<String, dynamic> serialize() {
@@ -52,10 +68,14 @@ class Profile {
       CREATED_BY: this.createdBy,
       BIO_DESCRIPTION: this.bioDescription,
       ADMIN: this.admin,
+      FOLLOWING_LIST: this.followingList,
+      COMMENTS_COUNT: this.commentsCount,
     };
   }
 
   static Profile deserialize(Map<String, dynamic> doc, String docId) {
+    Map<dynamic, dynamic> mapCount = doc[COMMENTS_COUNT];
+
     return Profile(
       profileID: docId,
       name: doc[NAME],
@@ -64,12 +84,16 @@ class Profile {
       createdBy: doc[CREATED_BY],
       bioDescription: doc[BIO_DESCRIPTION],
       admin: doc[ADMIN],
+      followingList: doc[FOLLOWING_LIST],
+      commentsCount: mapCount,
     );
   }
 
   String validateName(String value) {
     if (value == null || value.length < 1)
       return 'Enter your name';
+    else if (value.length >= 20)
+      return 'Name too long';
     else
       return null;
   }

@@ -6,7 +6,6 @@ import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
-import 'package:lesson3/screen/myView/myimage.dart';
 
 import 'addphotomemo_screen.dart';
 import 'detailedview_screen.dart';
@@ -25,6 +24,8 @@ class _UserHomeState extends State<UserHomeScreen> {
   User user;
   List<PhotoMemo> photoMemoList;
   Profile profile;
+  Map<dynamic, dynamic> commentsCount;
+
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool editToggle = false;
 
@@ -42,6 +43,9 @@ class _UserHomeState extends State<UserHomeScreen> {
     user ??= args[Constant.ARG_USER];
     profile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    commentsCount ??= args[Constant.ARG_COMMENTS_COUNT];
+    // print(profile.commentsCount);
+    // print(commentsCount);
 
     return GestureDetector(
       onTap: () {
@@ -98,7 +102,11 @@ class _UserHomeState extends State<UserHomeScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
+          backgroundColor: Colors.white,
+          child: Icon(
+            Icons.add,
+            color: Colors.black,
+          ),
           onPressed: con.addButton,
         ),
         body: photoMemoList.length == 0
@@ -145,10 +153,15 @@ class _UserHomeState extends State<UserHomeScreen> {
                           child: ListTile(
                             // Each item
 
-                            leading: MyImage.network(
-                              url: photoMemoList[index].photoURL,
-                              context: context,
-                            ),
+                            leading: Container(
+                                width: 60.0,
+                                height: 60.0,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                      fit: BoxFit.fitWidth,
+                                      image: NetworkImage(photoMemoList[index].photoURL)),
+                                )),
                             trailing: IconButton(
                               onPressed: () => con.onTap(index),
                               icon: Icon(Icons.settings),
@@ -163,13 +176,13 @@ class _UserHomeState extends State<UserHomeScreen> {
                                   Text(photoMemoList[index].memo.length >= 20
                                       ? photoMemoList[index].memo.substring(0, 20) + '...'
                                       : photoMemoList[index].memo),
-                                  Text('Created By: ${photoMemoList[index].createdBy}'),
                                   Text('Shared With: ${photoMemoList[index].sharedWith}'),
-                                  Text('Time: ${photoMemoList[index].timestamp}'),
+                                  Text(
+                                      'Date: ${photoMemoList[index].timestamp.toString().substring(0, 10)}'),
                                 ],
                               ),
                             ),
-                            onTap: () => con.checkComment(index),
+                            onTap: () => con.seePhotoMemo(index),
                             onLongPress: () => con.onLongPress(index),
                           ),
                         ),
@@ -184,9 +197,8 @@ class _UserHomeState extends State<UserHomeScreen> {
                                   elevation: 7.0,
                                   fillColor: Colors.black,
                                   child: Icon(Icons.thumb_up),
-                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10.0)),
+                                  padding: EdgeInsets.all(15.0),
+                                  shape: CircleBorder(),
                                 ),
                               ),
                               SizedBox(width: 4.0),
@@ -194,13 +206,12 @@ class _UserHomeState extends State<UserHomeScreen> {
                                 flex: 1,
                                 child: RawMaterialButton(
                                   onPressed: () =>
-                                      con.checkComment(index), // Check comment
+                                      con.seePhotoMemo(index), // Check comment
                                   elevation: 7.0,
                                   fillColor: Colors.black,
                                   child: Icon(Icons.message),
-                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10.0)),
+                                  padding: EdgeInsets.all(15.0),
+                                  shape: CircleBorder(),
                                 ),
                               ),
                             ],
@@ -229,6 +240,7 @@ class _Controller {
       arguments: {
         Constant.ARG_USER: state.user,
         Constant.ARG_PHOTOMEMOLIST: state.photoMemoList,
+        Constant.ARG_ONE_PROFILE: state.profile,
       },
     );
     state.render(() {});
@@ -311,18 +323,24 @@ class _Controller {
     state.render(() {});
   }
 
-  void checkComment(int index) async {
+  void seePhotoMemo(int index) async {
     state.render(() => delIndex = null);
     try {
-      List<Comment> commentList = await FirebaseController.getCommentList(
-          photomemoId: state.photoMemoList[index].docId);
+      var docId = state.photoMemoList[index].docId;
+      List<Comment> commentList =
+          await FirebaseController.getCommentList(photomemoId: docId);
 
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
             Constant.ARG_USER: state.user,
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
+            "PHOTO_MEMO_OWNER": state.profile.name,
           });
+
+      state.photoMemoList =
+          await FirebaseController.getPhotoMemoList(email: state.user.email);
+      state.render(() {});
     } catch (e) {
       MyDialog.info(
         context: state.context,

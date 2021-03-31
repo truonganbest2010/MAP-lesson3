@@ -2,12 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
-import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/home_screen.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/signup_screen.dart';
-import 'package:lesson3/screen/userhome_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   static const routeName = '/signInScreen';
@@ -38,7 +37,6 @@ class _SignInState extends State<SignInScreen> {
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-          formKey.currentState.reset();
         },
         child: Padding(
           padding: const EdgeInsets.only(top: 100.0, left: 15.0),
@@ -188,13 +186,19 @@ class _Controller {
     }
 
     try {
-      List<PhotoMemo> photoMemoList =
-          await FirebaseController.getPhotoMemoList(email: user.email);
+      List<Follow> followingList =
+          await FirebaseController.getFollowingList(email: email);
+      List<Follow> followerList = await FirebaseController.getFollowerList(email: email);
+      Profile profile = await FirebaseController.getOneProfileDatabase(email: email);
+
+      print(profile.commentsCount);
+
       MyDialog.circularProgressStop(state.context);
       Navigator.pushNamed(state.context, HomeScreen.routeName, arguments: {
         Constant.ARG_USER: user,
-        Constant.ARG_PHOTOMEMOLIST: photoMemoList,
         Constant.ARG_ONE_PROFILE: profile,
+        Constant.ARG_FOLLOWING_LIST: followingList,
+        Constant.ARG_FOLLOWER_LIST: followerList,
       });
     } catch (e) {
       MyDialog.circularProgressStop(state.context);

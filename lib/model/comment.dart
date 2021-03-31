@@ -5,6 +5,7 @@ class Comment {
   DateTime timestamp;
   String createdBy; // created by the commentor
   String sharedWith; // shared with owner of the photomemo
+  String profilePicURL;
 
   // key for Firestore Docs
   static const PHOTOMEMOID = 'photomemoId';
@@ -12,6 +13,7 @@ class Comment {
   static const TIMESTAMP = 'timestamp';
   static const CREATEDBY = 'createdBy';
   static const SHAREDWITH = 'sharedWith';
+  static const PROFILE_PIC_URL = 'profilePicURL';
 
   Comment({
     this.commentId,
@@ -20,6 +22,7 @@ class Comment {
     this.timestamp,
     this.createdBy,
     this.sharedWith,
+    this.profilePicURL,
   });
 
   Comment.clone(Comment c) {
@@ -28,6 +31,7 @@ class Comment {
     this.timestamp = c.timestamp;
     this.createdBy = c.createdBy;
     this.sharedWith = c.sharedWith;
+    this.profilePicURL = c.profilePicURL;
   }
 
   void assign(Comment c) {
@@ -36,6 +40,7 @@ class Comment {
     this.timestamp = c.timestamp;
     this.createdBy = c.createdBy;
     this.sharedWith = c.sharedWith;
+    this.profilePicURL = c.profilePicURL;
   }
 
   // From Dart object to Firestore Docs
@@ -46,6 +51,7 @@ class Comment {
       TIMESTAMP: this.timestamp,
       CREATEDBY: this.createdBy,
       SHAREDWITH: this.sharedWith,
+      PROFILE_PIC_URL: this.profilePicURL,
     };
   }
 
@@ -60,6 +66,7 @@ class Comment {
           : DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
       createdBy: doc[CREATEDBY],
       sharedWith: doc[SHAREDWITH],
+      profilePicURL: doc[PROFILE_PIC_URL],
     );
   }
 

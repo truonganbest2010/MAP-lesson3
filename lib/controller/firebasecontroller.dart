@@ -6,6 +6,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/model/constant.dart';
+import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/profile.dart';
@@ -42,8 +43,10 @@ class FirebaseController {
         .where(Profile.CREATED_BY, isEqualTo: email)
         .limit(1)
         .get();
+    print(querySnapshot.docs[0].data());
     Profile result =
         Profile.deserialize(querySnapshot.docs[0].data(), querySnapshot.docs[0].id);
+    // print(result.commentsCount);
     return result;
   }
 
@@ -56,6 +59,32 @@ class FirebaseController {
     querySnapshot.docs.forEach((doc) {
       result.add(Profile.deserialize(doc.data(), doc.id));
     });
+    return result;
+  }
+
+  static Future<List<Follow>> getFollowingList({@required String email}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .where(Follow.FOLLOWER, isEqualTo: email)
+        .get();
+    var result = <Follow>[];
+    querySnapshot.docs.forEach((doc) {
+      result.add(Follow.deserialize(doc.data(), doc.id));
+    });
+
+    return result;
+  }
+
+  static Future<List<Follow>> getFollowerList({@required String email}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .where(Follow.FOLLOWING, isEqualTo: email)
+        .get();
+    var result = <Follow>[];
+    querySnapshot.docs.forEach((doc) {
+      result.add(Follow.deserialize(doc.data(), doc.id));
+    });
+
     return result;
   }
 
@@ -121,6 +150,13 @@ class FirebaseController {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.COMMENT_COLLECTION)
         .add(c.serialize());
+    return ref.id;
+  }
+
+  static Future<String> follow(Follow f) async {
+    var ref = await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .add(f.serialize());
     return ref.id;
   }
 
@@ -226,6 +262,20 @@ class FirebaseController {
         .update(p.serialize());
   }
 
+  static Future<void> unfollow(String followerEmail, String followingEmail) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .where(Follow.FOLLOWER, isEqualTo: followerEmail)
+        .where(Follow.FOLLOWING, isEqualTo: followingEmail)
+        .limit(1)
+        .get();
+    var f = Follow.deserialize(querySnapshot.docs[0].data(), querySnapshot.docs[0].id);
+    await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .doc(f.docId)
+        .delete();
+  }
+
   static Future<List<PhotoMemo>> searchImage({
     @required String createdBy,
     @required List<String> searchLabels,
@@ -241,5 +291,22 @@ class FirebaseController {
       results.add(PhotoMemo.deserialize(doc.data(), doc.id));
     });
     return results;
+  }
+
+  static Future<Map<dynamic, dynamic>> retriveCommentsCountOfPhotoMemoList(
+      List<String> photoMemoIdList) async {
+    var result = <dynamic, dynamic>{};
+
+    for (var pid in photoMemoIdList) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.COMMENT_COLLECTION)
+          .where(Comment.PHOTOMEMOID, isEqualTo: pid)
+          .get();
+      var totalComment = querySnapshot.docs.length;
+
+      result.putIfAbsent(pid, () => totalComment);
+    }
+
+    return result;
   }
 }

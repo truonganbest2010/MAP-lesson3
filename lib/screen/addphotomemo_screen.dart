@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 
 class AddPhotoMemoScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class AddPhotoMemoScreen extends StatefulWidget {
 class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
   _Controller con;
   User user;
+  Profile profile;
   List<PhotoMemo> photoMemoList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   File photo;
@@ -36,6 +38,7 @@ class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    profile ??= args[Constant.ARG_ONE_PROFILE];
     return Scaffold(
       appBar: AppBar(
         actions: [IconButton(icon: Icon(Icons.check), onPressed: con.save)],
@@ -179,8 +182,6 @@ class _Controller {
 
       MyDialog.circularProgressStop(state.context);
       Navigator.pop(state.context);
-      // print('===== filename: ${photoInfo[Constant.ARG_FILENAME]}');
-      // print('===== filename: ${photoInfo[Constant.ARG_DOWNLOADURL]}');
     } catch (e) {
       MyDialog.circularProgressStop(state.context);
       MyDialog.info(
@@ -188,7 +189,6 @@ class _Controller {
         title: 'Save PhotoMemo Error',
         content: '$e',
       );
-      // print('===== $e');
     }
   }
 
