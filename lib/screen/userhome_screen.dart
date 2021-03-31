@@ -329,6 +329,11 @@ class _Controller {
       var docId = state.photoMemoList[index].docId;
       List<Comment> commentList =
           await FirebaseController.getCommentList(photomemoId: docId);
+      List<String> ownerPhoto = <String>[];
+      for (var c in commentList) {
+        Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
+        ownerPhoto.add(p.profilePhotoURL);
+      }
 
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
@@ -336,6 +341,7 @@ class _Controller {
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
             "PHOTO_MEMO_OWNER": state.profile.name,
+            "COMMENT_OWNER": ownerPhoto,
           });
 
       state.photoMemoList =

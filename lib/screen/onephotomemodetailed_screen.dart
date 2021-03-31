@@ -24,6 +24,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
   PhotoMemo photoMemo;
   List<Comment> commentList;
   String photoMemoOwner;
+  List<String> commentOwner;
 
   final commentTextField = TextEditingController();
 
@@ -42,6 +43,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
     photoMemo ??= args[Constant.ARG_ONE_PHOTOMEMO];
     commentList ??= args[Constant.ARG_COMMENTLIST];
     photoMemoOwner ??= args["PHOTO_MEMO_OWNER"];
+    commentOwner ??= args["COMMENT_OWNER"];
     return Scaffold(
       appBar: AppBar(
         actions: [],
@@ -242,13 +244,19 @@ class _Controller {
       tempComment.photoMemoId = state.photoMemo.docId;
       tempComment.createdBy = state.user.email;
       tempComment.sharedWith = state.photoMemo.createdBy;
-      Profile p = await FirebaseController.getOneProfileDatabase(email: state.user.email);
-      tempComment.profilePicURL = p.profilePhotoURL;
       String commentId = await FirebaseController.addComment(tempComment);
       tempComment.commentId = commentId;
       state.commentList.insert(0, tempComment);
       state.commentList =
           await FirebaseController.getCommentList(photomemoId: state.photoMemo.docId);
+
+      List<String> ownerPhoto = <String>[];
+      for (var c in state.commentList) {
+        Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
+        ownerPhoto.add(p.profilePhotoURL);
+      }
+
+      state.commentOwner = ownerPhoto;
 
       state.render(() {
         clearText();
@@ -294,7 +302,7 @@ class _Controller {
                             children: [
                               Expanded(
                                 flex: 1,
-                                child: c.profilePicURL != null
+                                child: state.commentOwner[commentList.indexOf(c)] != null
                                     ? Container(
                                         width: 30.0,
                                         height: 30.0,
@@ -302,7 +310,8 @@ class _Controller {
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
                                               fit: BoxFit.fitHeight,
-                                              image: NetworkImage(c.profilePicURL)),
+                                              image: NetworkImage(state
+                                                  .commentOwner[commentList.indexOf(c)])),
                                         ))
                                     : Container(
                                         width: 30.0,

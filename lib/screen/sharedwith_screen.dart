@@ -162,6 +162,12 @@ class _Controller {
     try {
       List<Comment> commentList = await FirebaseController.getCommentList(
           photomemoId: state.photoMemoList[index].docId);
+
+      List<String> ownerPhoto = <String>[];
+      for (var c in commentList) {
+        Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
+        ownerPhoto.add(p.profilePhotoURL);
+      }
       Profile p = await FirebaseController.getOneProfileDatabase(
           email: state.photoMemoList[index].createdBy);
 
@@ -171,6 +177,7 @@ class _Controller {
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
             "PHOTO_MEMO_OWNER": p.name,
+            "COMMENT_OWNER": ownerPhoto,
           });
     } catch (e) {
       MyDialog.info(
