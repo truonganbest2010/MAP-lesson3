@@ -19,7 +19,6 @@ class AddPhotoMemoScreen extends StatefulWidget {
 class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
   _Controller con;
   User user;
-  Profile profile;
   List<PhotoMemo> photoMemoList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   File photo;
@@ -38,7 +37,6 @@ class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
-    profile ??= args[Constant.ARG_ONE_PROFILE];
     return Scaffold(
       appBar: AppBar(
         actions: [IconButton(icon: Icon(Icons.check), onPressed: con.save)],
@@ -180,6 +178,9 @@ class _Controller {
       tempMemo.docId = docId;
       state.photoMemoList.insert(0, tempMemo);
 
+      Profile p = await FirebaseController.getOneProfileDatabase(email: state.user.email);
+      p.commentsCount.putIfAbsent(docId, () => null);
+      await FirebaseController.updateProfile(p);
       MyDialog.circularProgressStop(state.context);
       Navigator.pop(state.context);
     } catch (e) {

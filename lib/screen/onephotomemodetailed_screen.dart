@@ -24,7 +24,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
   PhotoMemo photoMemo;
   List<Comment> commentList;
   String photoMemoOwner;
-  List<String> commentOwner;
+  List<Profile> commentOwner;
 
   final commentTextField = TextEditingController();
 
@@ -102,8 +102,13 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('${photoMemo.title}',
-                                    style: Theme.of(context).textTheme.headline5),
+                                Text(
+                                  '${photoMemo.title}',
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 Text(photoMemo.timestamp.toString().substring(0, 16)),
                               ],
                             ),
@@ -117,8 +122,9 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
-                              child: Text(photoMemo.memo,
-                                  style: Theme.of(context).textTheme.headline6),
+                              child: Text(
+                                photoMemo.memo,
+                              ),
                             ),
                           ),
                         ],
@@ -178,13 +184,13 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                           flex: 4,
                           child: Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20.0),
+                              borderRadius: BorderRadius.circular(40.0),
                               color: Colors.black,
                             ),
                             child: Padding(
                               padding: const EdgeInsets.only(
-                                left: 15.0,
-                                right: 15.0,
+                                left: 20.0,
+                                right: 20.0,
                               ),
                               child: TextFormField(
                                 decoration: InputDecoration(
@@ -250,13 +256,12 @@ class _Controller {
       state.commentList =
           await FirebaseController.getCommentList(photomemoId: state.photoMemo.docId);
 
-      List<String> ownerPhoto = <String>[];
+      List<Profile> cOwner = <Profile>[];
       for (var c in state.commentList) {
         Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
-        ownerPhoto.add(p.profilePhotoURL);
+        cOwner.add(p);
       }
-
-      state.commentOwner = ownerPhoto;
+      state.commentOwner = cOwner;
 
       state.render(() {
         clearText();
@@ -293,50 +298,74 @@ class _Controller {
                       child: Container(
                         width: MediaQuery.of(context).size.width,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50.0),
+                          borderRadius: BorderRadius.circular(20.0),
                           color: Colors.black,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
-                          child: Row(
+                          child: Column(
                             children: [
-                              Expanded(
-                                flex: 1,
-                                child: state.commentOwner[commentList.indexOf(c)] != null
-                                    ? Container(
-                                        width: 30.0,
-                                        height: 30.0,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          image: DecorationImage(
-                                              fit: BoxFit.fitHeight,
-                                              image: NetworkImage(state
-                                                  .commentOwner[commentList.indexOf(c)])),
-                                        ))
-                                    : Container(
-                                        width: 30.0,
-                                        height: 30.0,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.grey,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: state.commentOwner[commentList.indexOf(c)]
+                                                .profilePhotoURL !=
+                                            null
+                                        ? Container(
+                                            width: 30.0,
+                                            height: 30.0,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              image: DecorationImage(
+                                                  fit: BoxFit.fitHeight,
+                                                  image: NetworkImage(state
+                                                      .commentOwner[
+                                                          commentList.indexOf(c)]
+                                                      .profilePhotoURL)),
+                                            ))
+                                        : Container(
+                                            width: 30.0,
+                                            height: 30.0,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.grey,
+                                            ),
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 20,
+                                            ),
+                                          ),
+                                  ),
+                                  Expanded(
+                                    flex: 8,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          state.commentOwner[commentList.indexOf(c)].name,
+                                          style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        child: Icon(
-                                          Icons.person,
-                                          size: 20,
+                                        Container(
+                                          margin:
+                                              EdgeInsets.fromLTRB(0.0, 5.0, 10.0, 5.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${c.comment}',
+                                                // style: Theme.of(context).textTheme.headline6,
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                              ),
-                              Expanded(
-                                flex: 7,
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      '${c.comment}',
-                                      // style: Theme.of(context).textTheme.headline6,
+                                      ],
                                     ),
-                                    SizedBox(height: 5.0),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -348,7 +377,7 @@ class _Controller {
                       flex: 1,
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20.0),
+                          borderRadius: BorderRadius.circular(15.0),
                           color: Colors.grey,
                         ),
                         child: Padding(

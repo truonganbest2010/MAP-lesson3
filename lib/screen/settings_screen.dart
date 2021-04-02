@@ -1,7 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
+import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
+import 'package:lesson3/screen/deleteaccount_screen.dart';
+import 'package:lesson3/screen/myView/myDialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = '/settingsScreen';
@@ -99,7 +103,7 @@ class _SettingsState extends State<SettingsScreen> {
                           fontSize: 20.0,
                         )),
                   ),
-                  onPressed: () {},
+                  onPressed: ctrl.deleteAccount,
                 ),
               ),
             ],
@@ -111,4 +115,22 @@ class _SettingsState extends State<SettingsScreen> {
 class _Controller {
   _SettingsState state;
   _Controller(this.state);
+
+  void deleteAccount() async {
+    try {
+      List<PhotoMemo> photoMemoList =
+          await FirebaseController.getPhotoMemoList(email: state.user.email);
+      await Navigator.pushNamed(state.context, DeleteAccountScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_ONE_PROFILE: state.profile,
+        Constant.ARG_PHOTOMEMOLIST: photoMemoList,
+      });
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Oops',
+        content: '$e',
+      );
+    }
+  }
 }

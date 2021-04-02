@@ -43,10 +43,11 @@ class FirebaseController {
         .where(Profile.CREATED_BY, isEqualTo: email)
         .limit(1)
         .get();
-    print(querySnapshot.docs[0].data());
-    Profile result =
-        Profile.deserialize(querySnapshot.docs[0].data(), querySnapshot.docs[0].id);
-    // print(result.commentsCount);
+
+    Profile result = Profile.deserialize(
+      querySnapshot.docs[0].data(),
+      querySnapshot.docs[0].id,
+    );
     return result;
   }
 
@@ -57,7 +58,10 @@ class FirebaseController {
         .get();
     var result = <Profile>[];
     querySnapshot.docs.forEach((doc) {
-      result.add(Profile.deserialize(doc.data(), doc.id));
+      result.add(Profile.deserialize(
+        doc.data(),
+        doc.id,
+      ));
     });
     return result;
   }
@@ -296,17 +300,66 @@ class FirebaseController {
   static Future<Map<dynamic, dynamic>> retriveCommentsCountOfPhotoMemoList(
       List<String> photoMemoIdList) async {
     var result = <dynamic, dynamic>{};
-
     for (var pid in photoMemoIdList) {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection(Constant.COMMENT_COLLECTION)
           .where(Comment.PHOTOMEMOID, isEqualTo: pid)
           .get();
       var totalComment = querySnapshot.docs.length;
-
       result.putIfAbsent(pid, () => totalComment);
     }
-
     return result;
+  }
+
+  static Future<void> deleteAnAccount({
+    @required String email,
+    @required String password,
+    @required Profile p,
+    @required List<PhotoMemo> photoMemoList,
+  }) async {
+    for (var pf in photoMemoList) {
+      await deleteComment(pf.docId); // delete comments
+    }
+
+    for (var pf in photoMemoList) {
+      await deletePhotoMemo(pf); // delete photo memos
+    }
+
+    await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .where(Follow.FOLLOWER, isEqualTo: email)
+        .get()
+        .then(
+          (value) => value.docs.forEach((doc) {
+            doc.reference.delete(); // delete following
+          }),
+        );
+
+    await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .where(Follow.FOLLOWING, isEqualTo: email)
+        .get()
+        .then(
+          (value) => value.docs.forEach((doc) {
+            doc.reference.delete(); // delete follower
+          }),
+        );
+
+    if (p.profilePhotoFilename != null) {
+      await FirebaseStorage.instance
+          .ref()
+          .child(p.profilePhotoFilename)
+          .delete(); // delete profile photo in storage
+    }
+    await FirebaseFirestore.instance
+        .collection(Constant.PROFILE_DATABASE)
+        .doc(p.profileID)
+        .delete(); // delete profile database
+
+    var user = FirebaseAuth.instance.currentUser;
+    AuthCredential credential =
+        EmailAuthProvider.credential(email: email, password: password);
+    var result = await user.reauthenticateWithCredential(credential);
+    await result.user.delete(); // delete user account
   }
 }

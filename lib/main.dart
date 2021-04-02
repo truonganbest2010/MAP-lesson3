@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/screen/addphotomemo_screen.dart';
 import 'package:lesson3/screen/addprofilephoto_screen.dart';
+import 'package:lesson3/screen/deleteaccount_screen.dart';
 import 'package:lesson3/screen/detailedview_screen.dart';
 import 'package:lesson3/screen/findpeople_screen.dart';
 import 'package:lesson3/screen/home_screen.dart';
@@ -39,6 +40,7 @@ class PhotoMemoApp extends StatelessWidget {
         SharedWithScreen.routeName: (context) => SharedWithScreen(),
         OnePhotoMemoDetailedScreen.routeName: (context) => OnePhotoMemoDetailedScreen(),
         SettingsScreen.routeName: (context) => SettingsScreen(),
+        DeleteAccountScreen.routeName: (context) => DeleteAccountScreen(),
         OneProfileScreen.routeName: (context) => OneProfileScreen(),
         AddProfilePhotoScreen.routeName: (context) => AddProfilePhotoScreen(),
         FindPeopleScreen.routeName: (context) => FindPeopleScreen(),

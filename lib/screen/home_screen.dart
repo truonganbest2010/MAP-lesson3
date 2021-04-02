@@ -152,7 +152,7 @@ class _HomeState extends State<HomeScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                              fit: BoxFit.fill,
+                                              fit: BoxFit.cover,
                                               image:
                                                   NetworkImage(profile.profilePhotoURL)),
                                         ))
@@ -189,9 +189,6 @@ class _HomeState extends State<HomeScreen> {
                                               borderSide: BorderSide(
                                                 color: Colors.black,
                                               ),
-                                              // borderRadius: const BorderRadius.all(
-                                              //   const Radius.circular(30.0),
-                                              // ),
                                             ),
                                             filled: true,
                                           ),
@@ -550,6 +547,8 @@ class _Controller {
         content: '$e',
       );
     }
+    state.profile =
+        await FirebaseController.getOneProfileDatabase(email: state.user.email);
     state.render(() {});
   }
 
@@ -600,10 +599,18 @@ class _Controller {
   }
 
   void goToSetting() async {
-    await Navigator.pushNamed(state.context, SettingsScreen.routeName, arguments: {
-      Constant.ARG_USER: state.user,
-      Constant.ARG_ONE_PROFILE: state.profile,
-    });
+    try {
+      await Navigator.pushNamed(state.context, SettingsScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_ONE_PROFILE: state.profile,
+      });
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Failed',
+        content: '$e',
+      );
+    }
     state.render(() {});
   }
 

@@ -134,7 +134,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                       shape: BoxShape.rectangle,
                       color: con.delIndex != null && con.delIndex == index
                           ? Theme.of(context).highlightColor
-                          : Colors.black,
+                          : Colors.grey[900],
                       border: Border.all(color: Colors.black),
                     ),
                     child: Column(
@@ -143,6 +143,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                           height: 15.0,
                         ),
                         Container(
+                          margin: EdgeInsets.only(left: 10.0, right: 10.0),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.all(Radius.circular(30.0)),
                             shape: BoxShape.rectangle,
@@ -187,7 +188,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                           child: Row(
                             children: [
                               Expanded(
@@ -197,21 +198,42 @@ class _UserHomeState extends State<UserHomeScreen> {
                                   elevation: 7.0,
                                   fillColor: Colors.black,
                                   child: Icon(Icons.thumb_up),
-                                  padding: EdgeInsets.all(15.0),
-                                  shape: CircleBorder(),
+                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0)),
                                 ),
                               ),
-                              SizedBox(width: 4.0),
+                              SizedBox(width: 20.0),
                               Expanded(
                                 flex: 1,
                                 child: RawMaterialButton(
                                   onPressed: () =>
                                       con.seePhotoMemo(index), // Check comment
                                   elevation: 7.0,
-                                  fillColor: Colors.black,
-                                  child: Icon(Icons.message),
-                                  padding: EdgeInsets.all(15.0),
-                                  shape: CircleBorder(),
+                                  fillColor: profile.commentsCount[
+                                              photoMemoList[index].docId] ==
+                                          null
+                                      ? Colors.black
+                                      : profile.commentsCount[
+                                                  photoMemoList[index].docId] ==
+                                              commentsCount[photoMemoList[index].docId]
+                                          ? Colors.black
+                                          : Colors.red,
+                                  child: Icon(
+                                    Icons.message,
+                                    color: profile.commentsCount[
+                                                photoMemoList[index].docId] ==
+                                            null
+                                        ? Colors.white
+                                        : profile.commentsCount[
+                                                    photoMemoList[index].docId] ==
+                                                commentsCount[photoMemoList[index].docId]
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0)),
                                 ),
                               ),
                             ],
@@ -240,9 +262,10 @@ class _Controller {
       arguments: {
         Constant.ARG_USER: state.user,
         Constant.ARG_PHOTOMEMOLIST: state.photoMemoList,
-        Constant.ARG_ONE_PROFILE: state.profile,
       },
     );
+    state.profile =
+        await FirebaseController.getOneProfileDatabase(email: state.user.email);
     state.render(() {});
   }
 
@@ -274,6 +297,8 @@ class _Controller {
       PhotoMemo p = state.photoMemoList[delIndex];
       await FirebaseController.deletePhotoMemo(p);
       await FirebaseController.deleteComment(p.docId);
+      state.profile.commentsCount.removeWhere((key, value) => key == p.docId);
+      await FirebaseController.updateProfile(state.profile);
 
       state.render(() {
         state.photoMemoList.removeAt(delIndex);
@@ -327,13 +352,15 @@ class _Controller {
     state.render(() => delIndex = null);
     try {
       var docId = state.photoMemoList[index].docId;
-      List<Comment> commentList =
-          await FirebaseController.getCommentList(photomemoId: docId);
-      List<String> ownerPhoto = <String>[];
+      var commentList = await FirebaseController.getCommentList(photomemoId: docId);
+      var commentOwner = <Profile>[];
       for (var c in commentList) {
         Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
-        ownerPhoto.add(p.profilePhotoURL);
+        commentOwner.add(p);
       }
+      state.profile.commentsCount[docId] = state.commentsCount[docId];
+
+      await FirebaseController.updateProfile(state.profile);
 
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
@@ -341,11 +368,13 @@ class _Controller {
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
             "PHOTO_MEMO_OWNER": state.profile.name,
-            "COMMENT_OWNER": ownerPhoto,
+            "COMMENT_OWNER": commentOwner,
           });
 
       state.photoMemoList =
           await FirebaseController.getPhotoMemoList(email: state.user.email);
+      state.profile =
+          await FirebaseController.getOneProfileDatabase(email: state.user.email);
       state.render(() {});
     } catch (e) {
       MyDialog.info(

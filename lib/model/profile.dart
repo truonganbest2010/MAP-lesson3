@@ -26,8 +26,8 @@ class Profile {
     this.createdBy,
     this.bioDescription,
     this.admin,
-    followingList,
-    commentsCount,
+    this.followingList,
+    this.commentsCount,
   }) {
     this.followingList ??= [];
     this.commentsCount ??= {};
@@ -73,9 +73,10 @@ class Profile {
     };
   }
 
-  static Profile deserialize(Map<String, dynamic> doc, String docId) {
-    Map<dynamic, dynamic> mapCount = doc[COMMENTS_COUNT];
-
+  static Profile deserialize(
+    Map<String, dynamic> doc,
+    String docId,
+  ) {
     return Profile(
       profileID: docId,
       name: doc[NAME],
@@ -85,7 +86,7 @@ class Profile {
       bioDescription: doc[BIO_DESCRIPTION],
       admin: doc[ADMIN],
       followingList: doc[FOLLOWING_LIST],
-      commentsCount: mapCount,
+      commentsCount: doc[COMMENTS_COUNT],
     );
   }
 

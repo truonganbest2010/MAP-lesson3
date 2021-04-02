@@ -82,7 +82,7 @@ class _AddProfilePhotoState extends State<AddProfilePhotoScreen> {
                     child: Container(
                       child: Image.file(
                         photo,
-                        fit: BoxFit.fill,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),

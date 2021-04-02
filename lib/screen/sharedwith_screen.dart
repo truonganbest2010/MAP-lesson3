@@ -70,7 +70,7 @@ class _SharedWithState extends State<SharedWithScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(30.0)),
                     border: Border.all(color: Colors.black),
-                    color: Colors.grey[700],
+                    color: Colors.grey[900],
                   ),
                   child: Column(
                     children: [
@@ -78,10 +78,11 @@ class _SharedWithState extends State<SharedWithScreen> {
                         height: 15.0,
                       ),
                       Container(
+                        margin: EdgeInsets.only(left: 10.0, right: 10.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(30.0)),
                           shape: BoxShape.rectangle,
-                          color: Colors.black,
+                          color: Colors.grey[800],
                         ),
                         child: ListTile(
                           // Each item
@@ -114,7 +115,7 @@ class _SharedWithState extends State<SharedWithScreen> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                         child: Row(
                           children: [
                             Expanded(
@@ -126,10 +127,10 @@ class _SharedWithState extends State<SharedWithScreen> {
                                 child: Icon(Icons.thumb_up),
                                 padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0)),
+                                    borderRadius: BorderRadius.circular(20.0)),
                               ),
                             ),
-                            SizedBox(width: 4.0),
+                            SizedBox(width: 20.0),
                             Expanded(
                               flex: 1,
                               child: RawMaterialButton(
@@ -139,7 +140,7 @@ class _SharedWithState extends State<SharedWithScreen> {
                                 child: Icon(Icons.message),
                                 padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0)),
+                                    borderRadius: BorderRadius.circular(20.0)),
                               ),
                             ),
                           ],
@@ -163,10 +164,10 @@ class _Controller {
       List<Comment> commentList = await FirebaseController.getCommentList(
           photomemoId: state.photoMemoList[index].docId);
 
-      List<String> ownerPhoto = <String>[];
+      List<Profile> commentOwner = <Profile>[];
       for (var c in commentList) {
         Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
-        ownerPhoto.add(p.profilePhotoURL);
+        commentOwner.add(p);
       }
       Profile p = await FirebaseController.getOneProfileDatabase(
           email: state.photoMemoList[index].createdBy);
@@ -177,7 +178,7 @@ class _Controller {
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
             "PHOTO_MEMO_OWNER": p.name,
-            "COMMENT_OWNER": ownerPhoto,
+            "COMMENT_OWNER": commentOwner,
           });
     } catch (e) {
       MyDialog.info(
