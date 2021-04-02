@@ -18,7 +18,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsState extends State<SettingsScreen> {
   _Controller ctrl;
   User user;
-  Profile profile;
+  Profile userProfile;
 
   @override
   void initState() {
@@ -31,7 +31,7 @@ class _SettingsState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_ONE_PROFILE];
+    userProfile ??= args[Constant.ARG_ONE_PROFILE];
     return Scaffold(
         appBar: AppBar(
           actions: [],
@@ -122,7 +122,7 @@ class _Controller {
           await FirebaseController.getPhotoMemoList(email: state.user.email);
       await Navigator.pushNamed(state.context, DeleteAccountScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
-        Constant.ARG_ONE_PROFILE: state.profile,
+        Constant.ARG_ONE_PROFILE: state.userProfile,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
       });
     } catch (e) {

@@ -19,7 +19,7 @@ class AddProfilePhotoScreen extends StatefulWidget {
 class _AddProfilePhotoState extends State<AddProfilePhotoScreen> {
   _Controller ctrl;
   User user;
-  Profile profile;
+  Profile userProfile;
   File photo;
   String progressMessage;
 
@@ -35,7 +35,7 @@ class _AddProfilePhotoState extends State<AddProfilePhotoScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_ONE_PROFILE];
+    userProfile ??= args[Constant.ARG_ONE_PROFILE];
     return Scaffold(
         // appBar: AppBar(
         //   actions: [],
@@ -182,9 +182,9 @@ class _Controller {
             });
           });
 
-      state.profile.profilePhotoFilename = photoInfo[Constant.ARG_FILENAME];
-      state.profile.profilePhotoURL = photoInfo[Constant.ARG_DOWNLOADURL];
-      await FirebaseController.updateProfile(state.profile);
+      state.userProfile.profilePhotoFilename = photoInfo[Constant.ARG_FILENAME];
+      state.userProfile.profilePhotoURL = photoInfo[Constant.ARG_DOWNLOADURL];
+      await FirebaseController.updateProfile(state.userProfile);
       MyDialog.circularProgressStop(state.context);
       Navigator.pop(state.context);
     } catch (e) {

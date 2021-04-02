@@ -10,6 +10,7 @@ class Constant {
   static const ARG_PROFILE_LIST = 'profile_list';
   static const ARG_FOLLOWING_LIST = 'following_list';
   static const ARG_FOLLOWER_LIST = 'follower_list';
+  static const ARG_PENDING_REQUEST_LIST = 'pending_request_list';
   static const ARG_COMMENTS_COUNT = 'comments_count';
 
 // menu

@@ -8,8 +8,6 @@ import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/onephotomemodetailed_screen.dart';
 
-import 'myView/myimage.dart';
-
 class SharedWithScreen extends StatefulWidget {
   static const routeName = '/sharedWithScreen';
   @override

@@ -200,7 +200,7 @@ class _FindPeopleState extends State<FindPeopleScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                  fit: BoxFit.fill,
+                                  fit: BoxFit.cover,
                                   image: NetworkImage(p.profilePhotoURL)),
                             ))
                         : Container(
@@ -261,6 +261,7 @@ class _Controller {
       var tempFollow = Follow();
       tempFollow.follower = state.user.email;
       tempFollow.following = followingEmail;
+      tempFollow.pendingStatus = true;
       var id = await FirebaseController.follow(tempFollow);
       tempFollow.docId = id;
       state.followingList.insert(0, tempFollow);
@@ -295,7 +296,8 @@ class _Controller {
 
   void cancel() async {
     state.formKey.currentState.reset();
-    state.profileList = await FirebaseController.getProfileList(email: state.user.email);
+    state.profileList =
+        await FirebaseController.getProfileListForSearch(email: state.user.email);
 
     state.render(() {
       FocusScope.of(state.context).unfocus();
@@ -314,7 +316,8 @@ class _Controller {
           }
         }
       } else {
-        result = await FirebaseController.getProfileList(email: state.user.email);
+        result =
+            await FirebaseController.getProfileListForSearch(email: state.user.email);
       }
 
       state.render(() => state.profileList = result);

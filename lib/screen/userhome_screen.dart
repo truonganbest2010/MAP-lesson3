@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
-import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
@@ -23,7 +22,7 @@ class _UserHomeState extends State<UserHomeScreen> {
   _Controller con;
   User user;
   List<PhotoMemo> photoMemoList;
-  Profile profile;
+  Profile userProfile;
   Map<dynamic, dynamic> commentsCount;
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -41,7 +40,7 @@ class _UserHomeState extends State<UserHomeScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_ONE_PROFILE];
+    userProfile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
     commentsCount ??= args[Constant.ARG_COMMENTS_COUNT];
     // print(profile.commentsCount);
@@ -210,22 +209,22 @@ class _UserHomeState extends State<UserHomeScreen> {
                                   onPressed: () =>
                                       con.seePhotoMemo(index), // Check comment
                                   elevation: 7.0,
-                                  fillColor: profile.commentsCount[
+                                  fillColor: userProfile.commentsCount[
                                               photoMemoList[index].docId] ==
                                           null
                                       ? Colors.black
-                                      : profile.commentsCount[
+                                      : userProfile.commentsCount[
                                                   photoMemoList[index].docId] ==
                                               commentsCount[photoMemoList[index].docId]
                                           ? Colors.black
                                           : Colors.red,
                                   child: Icon(
                                     Icons.message,
-                                    color: profile.commentsCount[
+                                    color: userProfile.commentsCount[
                                                 photoMemoList[index].docId] ==
                                             null
                                         ? Colors.white
-                                        : profile.commentsCount[
+                                        : userProfile.commentsCount[
                                                     photoMemoList[index].docId] ==
                                                 commentsCount[photoMemoList[index].docId]
                                             ? Colors.white
@@ -264,7 +263,7 @@ class _Controller {
         Constant.ARG_PHOTOMEMOLIST: state.photoMemoList,
       },
     );
-    state.profile =
+    state.userProfile =
         await FirebaseController.getOneProfileDatabase(email: state.user.email);
     state.render(() {});
   }
@@ -297,8 +296,8 @@ class _Controller {
       PhotoMemo p = state.photoMemoList[delIndex];
       await FirebaseController.deletePhotoMemo(p);
       await FirebaseController.deleteComment(p.docId);
-      state.profile.commentsCount.removeWhere((key, value) => key == p.docId);
-      await FirebaseController.updateProfile(state.profile);
+      state.userProfile.commentsCount.removeWhere((key, value) => key == p.docId);
+      await FirebaseController.updateProfile(state.userProfile);
 
       state.render(() {
         state.photoMemoList.removeAt(delIndex);
@@ -358,22 +357,22 @@ class _Controller {
         Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
         commentOwner.add(p);
       }
-      state.profile.commentsCount[docId] = state.commentsCount[docId];
+      state.userProfile.commentsCount[docId] = state.commentsCount[docId];
 
-      await FirebaseController.updateProfile(state.profile);
+      await FirebaseController.updateProfile(state.userProfile);
 
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
             Constant.ARG_USER: state.user,
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
-            "PHOTO_MEMO_OWNER": state.profile.name,
+            "PHOTO_MEMO_OWNER": state.userProfile.name,
             "COMMENT_OWNER": commentOwner,
           });
 
       state.photoMemoList =
           await FirebaseController.getPhotoMemoList(email: state.user.email);
-      state.profile =
+      state.userProfile =
           await FirebaseController.getOneProfileDatabase(email: state.user.email);
       state.render(() {});
     } catch (e) {

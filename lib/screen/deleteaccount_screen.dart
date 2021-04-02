@@ -21,7 +21,7 @@ class _DeleteAccountState extends State<DeleteAccountScreen> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   User user;
-  Profile profile;
+  Profile userProfile;
   List<PhotoMemo> photoMemoList;
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _DeleteAccountState extends State<DeleteAccountScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_ONE_PROFILE];
+    userProfile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
     return Scaffold(
       appBar: AppBar(
@@ -129,7 +129,7 @@ class _Controller {
                   await FirebaseController.deleteAnAccount(
                       email: state.user.email,
                       password: password,
-                      p: state.profile,
+                      p: state.userProfile,
                       photoMemoList: state.photoMemoList);
                 } catch (e) {
                   MyDialog.info(

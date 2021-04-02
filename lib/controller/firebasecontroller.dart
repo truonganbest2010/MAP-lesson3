@@ -33,7 +33,6 @@ class FirebaseController {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PROFILE_DATABASE)
         .add(profile.serialize());
-
     return ref.id;
   }
 
@@ -51,7 +50,7 @@ class FirebaseController {
     return result;
   }
 
-  static Future<List<Profile>> getProfileList({@required String email}) async {
+  static Future<List<Profile>> getProfileListForSearch({@required String email}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.PROFILE_DATABASE)
         .where(Profile.CREATED_BY, isNotEqualTo: email)
@@ -75,7 +74,6 @@ class FirebaseController {
     querySnapshot.docs.forEach((doc) {
       result.add(Follow.deserialize(doc.data(), doc.id));
     });
-
     return result;
   }
 
@@ -83,13 +81,34 @@ class FirebaseController {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.FOLLOW_DATABASE)
         .where(Follow.FOLLOWING, isEqualTo: email)
+        .where(Follow.PENDING_STATUS, isEqualTo: false)
         .get();
     var result = <Follow>[];
     querySnapshot.docs.forEach((doc) {
       result.add(Follow.deserialize(doc.data(), doc.id));
     });
-
     return result;
+  }
+
+  static Future<List<Follow>> getPendingRequestList({@required String email}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .where(Follow.FOLLOWING, isEqualTo: email)
+        .where(Follow.PENDING_STATUS, isEqualTo: true)
+        .get();
+    var result = <Follow>[];
+    querySnapshot.docs.forEach((doc) {
+      result.add(Follow.deserialize(doc.data(), doc.id));
+    });
+    return result;
+  }
+
+  static Future<void> acceptPendingRequest({@required Follow f}) async {
+    f.pendingStatus = false;
+    await FirebaseFirestore.instance
+        .collection(Constant.FOLLOW_DATABASE)
+        .doc(f.docId)
+        .update(f.serialize());
   }
 
   static Future<void> signOut() async {
@@ -146,7 +165,6 @@ class FirebaseController {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COLLECTION)
         .add(photoMemo.serialize());
-
     return ref.id;
   }
 
@@ -201,7 +219,6 @@ class FirebaseController {
       if (label.confidence >= Constant.MIN_ML_CONFIDENCE)
         labels.add(label.text.toLowerCase());
     }
-
     return labels;
   }
 
@@ -232,7 +249,6 @@ class FirebaseController {
     querySnapshot.docs.forEach((doc) {
       result.add(PhotoMemo.deserialize(doc.data(), doc.id));
     });
-
     return result;
   }
 

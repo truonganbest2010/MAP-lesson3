@@ -5,10 +5,12 @@ import 'package:lesson3/screen/addphotomemo_screen.dart';
 import 'package:lesson3/screen/addprofilephoto_screen.dart';
 import 'package:lesson3/screen/deleteaccount_screen.dart';
 import 'package:lesson3/screen/detailedview_screen.dart';
+import 'package:lesson3/screen/displayfollowers_screen.dart';
 import 'package:lesson3/screen/findpeople_screen.dart';
 import 'package:lesson3/screen/home_screen.dart';
 import 'package:lesson3/screen/onephotomemodetailed_screen.dart';
 import 'package:lesson3/screen/oneprofile_screen.dart';
+import 'package:lesson3/screen/pendingrequest_screen.dart';
 import 'package:lesson3/screen/settings_screen.dart';
 import 'package:lesson3/screen/sharedwith_screen.dart';
 import 'package:lesson3/screen/signIn_screen.dart';
@@ -45,6 +47,8 @@ class PhotoMemoApp extends StatelessWidget {
         AddProfilePhotoScreen.routeName: (context) => AddProfilePhotoScreen(),
         FindPeopleScreen.routeName: (context) => FindPeopleScreen(),
         HomeScreen.routeName: (context) => HomeScreen(),
+        DisplayFollowerScreen.routeName: (context) => DisplayFollowerScreen(),
+        PendingRequestScreen.routeName: (context) => PendingRequestScreen(),
       },
     );
   }

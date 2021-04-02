@@ -5,6 +5,7 @@ import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
+import 'package:lesson3/screen/displayfollowers_screen.dart';
 import 'package:lesson3/screen/findpeople_screen.dart';
 import 'package:lesson3/screen/settings_screen.dart';
 import 'package:lesson3/screen/sharedwith_screen.dart';
@@ -24,7 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeState extends State<HomeScreen> {
   _Controller ctrl;
   User user;
-  Profile profile;
+  Profile userProfile;
   List<Follow> followingList;
   List<Follow> followerList;
 
@@ -42,7 +43,7 @@ class _HomeState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
-    profile ??= args[Constant.ARG_ONE_PROFILE];
+    userProfile ??= args[Constant.ARG_ONE_PROFILE];
     followingList ??= args[Constant.ARG_FOLLOWING_LIST];
     followerList ??= args[Constant.ARG_FOLLOWER_LIST];
     return WillPopScope(
@@ -70,7 +71,7 @@ class _HomeState extends State<HomeScreen> {
           child: ListView(
             children: [
               UserAccountsDrawerHeader(
-                  currentAccountPicture: profile.profilePhotoURL == null
+                  currentAccountPicture: userProfile.profilePhotoURL == null
                       ? Container(
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.all(Radius.circular(50.0)),
@@ -82,13 +83,13 @@ class _HomeState extends State<HomeScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                              fit: BoxFit.fitWidth,
-                              image: NetworkImage(profile.profilePhotoURL),
+                              fit: BoxFit.cover,
+                              image: NetworkImage(userProfile.profilePhotoURL),
                             ),
                           ),
                         ),
                   accountName: Text(
-                    'Hi, ' + profile.name,
+                    'Hi, ' + userProfile.name,
                     style: Theme.of(context).textTheme.headline5,
                   ),
                   accountEmail: Text(user.email)),
@@ -118,7 +119,7 @@ class _HomeState extends State<HomeScreen> {
                     children: [
                       Stack(
                         children: [
-                          if (profile.admin == true)
+                          if (userProfile.admin == true)
                             Positioned(
                               right: 10.0,
                               top: 0.0,
@@ -145,7 +146,7 @@ class _HomeState extends State<HomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(height: 10.0),
-                                profile.profilePhotoURL != null
+                                userProfile.profilePhotoURL != null
                                     ? Container(
                                         width: 200.0,
                                         height: 200.0,
@@ -153,8 +154,8 @@ class _HomeState extends State<HomeScreen> {
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
                                               fit: BoxFit.cover,
-                                              image:
-                                                  NetworkImage(profile.profilePhotoURL)),
+                                              image: NetworkImage(
+                                                  userProfile.profilePhotoURL)),
                                         ))
                                     : Container(
                                         width: 200.0,
@@ -182,7 +183,7 @@ class _HomeState extends State<HomeScreen> {
                                   ),
                                   child: editToggle == true
                                       ? TextFormField(
-                                          initialValue: profile.name,
+                                          initialValue: userProfile.name,
                                           decoration: InputDecoration(
                                             contentPadding: EdgeInsets.all(10.0),
                                             border: OutlineInputBorder(
@@ -196,13 +197,13 @@ class _HomeState extends State<HomeScreen> {
                                           keyboardType: TextInputType.name,
                                           maxLines: 1,
                                           enabled: editToggle,
-                                          validator: profile.validateName,
+                                          validator: userProfile.validateName,
                                           onSaved: ctrl.saveName,
                                         )
                                       : Padding(
                                           padding: const EdgeInsets.all(10.0),
                                           child: Text(
-                                            profile.name,
+                                            userProfile.name,
                                             style: Theme.of(context).textTheme.headline5,
                                           ),
                                         ),
@@ -229,7 +230,7 @@ class _HomeState extends State<HomeScreen> {
                                 ),
                                 onSelected: ctrl.profilePhotoSetting,
                                 itemBuilder: (context) => <PopupMenuEntry<String>>[
-                                  (profile.profilePhotoURL == null)
+                                  (userProfile.profilePhotoURL == null)
                                       ? PopupMenuItem(
                                           value: Constant.SRC_SELECT_PROFILE_PHOTO,
                                           child: Row(
@@ -261,7 +262,7 @@ class _HomeState extends State<HomeScreen> {
                           children: [
                             Expanded(
                               child: RawMaterialButton(
-                                onPressed: () {},
+                                onPressed: () => ctrl.goToDisplayFollower(),
                                 elevation: 7.0,
                                 fillColor: Colors.black,
                                 child: Text('Follower  ${followerList.length}',
@@ -300,20 +301,20 @@ class _HomeState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             RawMaterialButton(
-                              onPressed: ctrl.goToUserHome,
+                              onPressed: ctrl.goToSharedWithMe,
                               elevation: 7.0,
                               fillColor: Colors.black,
-                              child: Icon(Icons.home),
+                              child: Icon(Icons.public),
                               padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0)),
                             ),
                             SizedBox(width: 5.0),
                             RawMaterialButton(
-                              onPressed: ctrl.goToSharedWithMe,
+                              onPressed: ctrl.goToUserHome,
                               elevation: 7.0,
                               fillColor: Colors.black,
-                              child: Icon(Icons.public),
+                              child: Icon(Icons.home),
                               padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0)),
@@ -330,7 +331,7 @@ class _HomeState extends State<HomeScreen> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0)),
                             ),
-                            if (profile.admin == true)
+                            if (userProfile.admin == true)
                               Row(
                                 children: [
                                   SizedBox(width: 5.0),
@@ -365,9 +366,9 @@ class _HomeState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: editToggle == true
                             ? TextFormField(
-                                initialValue: profile.bioDescription == null
+                                initialValue: userProfile.bioDescription == null
                                     ? ''
-                                    : profile.bioDescription,
+                                    : userProfile.bioDescription,
                                 decoration: InputDecoration(
                                   contentPadding: EdgeInsets.all(20.0),
                                   border: OutlineInputBorder(
@@ -379,9 +380,9 @@ class _HomeState extends State<HomeScreen> {
                                     ),
                                   ),
 
-                                  hintText: profile.bioDescription == null
+                                  hintText: userProfile.bioDescription == null
                                       ? 'Insert Bio'
-                                      : profile.bioDescription,
+                                      : userProfile.bioDescription,
                                   fillColor: Colors
                                       .grey[900], // Theme.of(context).backgroundColor,
                                   filled: true,
@@ -415,7 +416,7 @@ class _HomeState extends State<HomeScreen> {
                                     )
                                   ],
                                 ),
-                                child: profile.bioDescription == null
+                                child: userProfile.bioDescription == null
                                     ? Padding(
                                         padding: const EdgeInsets.all(15.0),
                                         child: Center(
@@ -431,7 +432,7 @@ class _HomeState extends State<HomeScreen> {
                                     : Padding(
                                         padding: const EdgeInsets.all(15.0),
                                         child: Text(
-                                          profile.bioDescription,
+                                          userProfile.bioDescription,
                                           style: TextStyle(
                                             fontFamily: "Pacifico",
                                             fontSize: 20.0,
@@ -472,7 +473,7 @@ class _Controller {
         await Navigator.pushNamed(state.context, AddProfilePhotoScreen.routeName,
             arguments: {
               Constant.ARG_USER: state.user,
-              Constant.ARG_ONE_PROFILE: state.profile,
+              Constant.ARG_ONE_PROFILE: state.userProfile,
             });
       } else if (src == Constant.SRC_REMOVE_PROFILE_PHOTO) {
         await showDeleteAlertDialog(state.context);
@@ -498,7 +499,7 @@ class _Controller {
     Widget continueButton = FlatButton(
       child: Text("Continue"),
       onPressed: () async {
-        await FirebaseController.deleteProfilePic(state.profile);
+        await FirebaseController.deleteProfilePic(state.userProfile);
         Navigator.pop(context);
         state.render(() {});
       },
@@ -520,36 +521,35 @@ class _Controller {
     );
   }
 
-  void goToUserHome() async {
-    MyDialog.circularProgressStart(state.context);
+  void goToDisplayFollower() async {
     try {
-      List<PhotoMemo> photoMemoList =
-          await FirebaseController.getPhotoMemoList(email: state.user.email);
-      var photoMemoIdList = <String>[];
-      photoMemoList.forEach((p) {
-        photoMemoIdList.add(p.docId);
-      });
-      Map<dynamic, dynamic> commentCounts =
-          await FirebaseController.retriveCommentsCountOfPhotoMemoList(photoMemoIdList);
+      var pendingRequestList =
+          await FirebaseController.getPendingRequestList(email: state.user.email);
+      var followerList =
+          await FirebaseController.getFollowerList(email: state.user.email);
 
-      await Navigator.pushNamed(state.context, UserHomeScreen.routeName, arguments: {
-        Constant.ARG_USER: state.user,
-        Constant.ARG_PHOTOMEMOLIST: photoMemoList,
-        Constant.ARG_ONE_PROFILE: state.profile,
-        Constant.ARG_COMMENTS_COUNT: commentCounts,
-      });
-      MyDialog.circularProgressStop(state.context);
+      var profileList = <Profile>[];
+      for (var f in followerList) {
+        var prf = await FirebaseController.getOneProfileDatabase(email: f.follower);
+        profileList.add(prf);
+      }
+      await Navigator.pushNamed(state.context, DisplayFollowerScreen.routeName,
+          arguments: {
+            Constant.ARG_USER: state.user,
+            Constant.ARG_ONE_PROFILE: state.userProfile,
+            Constant.ARG_PROFILE_LIST: profileList,
+            Constant.ARG_PENDING_REQUEST_LIST: pendingRequestList,
+          });
+      state.followerList =
+          await FirebaseController.getFollowerList(email: state.user.email);
+      state.render(() {});
     } catch (e) {
-      MyDialog.circularProgressStop(state.context);
       MyDialog.info(
         context: state.context,
-        title: 'get PhotoMemoList error',
+        title: 'Oops',
         content: '$e',
       );
     }
-    state.profile =
-        await FirebaseController.getOneProfileDatabase(email: state.user.email);
-    state.render(() {});
   }
 
   void goToSharedWithMe() async {
@@ -571,11 +571,43 @@ class _Controller {
     state.render(() {});
   }
 
+  void goToUserHome() async {
+    MyDialog.circularProgressStart(state.context);
+    try {
+      List<PhotoMemo> photoMemoList =
+          await FirebaseController.getPhotoMemoList(email: state.user.email);
+      var photoMemoIdList = <String>[];
+      photoMemoList.forEach((p) {
+        photoMemoIdList.add(p.docId);
+      });
+      Map<dynamic, dynamic> commentCounts =
+          await FirebaseController.retriveCommentsCountOfPhotoMemoList(photoMemoIdList);
+
+      await Navigator.pushNamed(state.context, UserHomeScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_PHOTOMEMOLIST: photoMemoList,
+        Constant.ARG_ONE_PROFILE: state.userProfile,
+        Constant.ARG_COMMENTS_COUNT: commentCounts,
+      });
+      MyDialog.circularProgressStop(state.context);
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context,
+        title: 'get PhotoMemoList error',
+        content: '$e',
+      );
+    }
+    state.userProfile =
+        await FirebaseController.getOneProfileDatabase(email: state.user.email);
+    state.render(() {});
+  }
+
   void goToFindPeople() async {
     MyDialog.circularProgressStart(state.context);
     try {
       List<Profile> profileList =
-          await FirebaseController.getProfileList(email: state.user.email);
+          await FirebaseController.getProfileListForSearch(email: state.user.email);
 
       await Navigator.pushNamed(state.context, FindPeopleScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
@@ -602,7 +634,7 @@ class _Controller {
     try {
       await Navigator.pushNamed(state.context, SettingsScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
-        Constant.ARG_ONE_PROFILE: state.profile,
+        Constant.ARG_ONE_PROFILE: state.userProfile,
       });
     } catch (e) {
       MyDialog.info(
@@ -616,13 +648,13 @@ class _Controller {
 
   void saveBio(String value) {
     if (value.length == 0)
-      state.profile.bioDescription = null;
+      state.userProfile.bioDescription = null;
     else
-      state.profile.bioDescription = value;
+      state.userProfile.bioDescription = value;
   }
 
   void saveName(String value) {
-    state.profile.name = value;
+    state.userProfile.name = value;
   }
 
   void toggleEdit() async {
@@ -630,7 +662,7 @@ class _Controller {
 
     state.formKey.currentState.save();
     if (state.editToggle == true) {
-      await FirebaseController.updateProfile(state.profile);
+      await FirebaseController.updateProfile(state.userProfile);
     }
     state.editToggle = !state.editToggle;
     state.render(() {});
