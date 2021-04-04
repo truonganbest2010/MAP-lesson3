@@ -141,7 +141,7 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         image: DecorationImage(
-                                            fit: BoxFit.fitWidth,
+                                            fit: BoxFit.cover,
                                             image: NetworkImage(
                                                 profileList[index].profilePhotoURL)),
                                       ),
@@ -159,7 +159,10 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
                                       ),
                                     ),
                               title: Text(profileList[index].name,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20.0,
+                                  )),
                               trailing: Text(profileList[index].createdBy),
                               onTap: () => ctrl.goToProfile(profileList[index].createdBy),
                             ),

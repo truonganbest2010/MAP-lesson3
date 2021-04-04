@@ -159,22 +159,29 @@ class _UserHomeState extends State<UserHomeScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   image: DecorationImage(
-                                      fit: BoxFit.fitWidth,
+                                      fit: BoxFit.cover,
                                       image: NetworkImage(photoMemoList[index].photoURL)),
                                 )),
                             trailing: IconButton(
                               onPressed: () => con.onTap(index),
                               icon: Icon(Icons.settings),
                             ),
-                            title: Text(photoMemoList[index].title,
-                                style: Theme.of(context).textTheme.headline4),
+                            title: Text(
+                                photoMemoList[index].title.length > 10
+                                    ? photoMemoList[index].title.substring(0, 10) + ' ...'
+                                    : photoMemoList[index].title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 25.0,
+                                )),
                             subtitle: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(photoMemoList[index].memo.length >= 20
-                                      ? photoMemoList[index].memo.substring(0, 20) + '...'
+                                  Text(photoMemoList[index].memo.length > 10
+                                      ? photoMemoList[index].memo.substring(0, 10) +
+                                          ' ...'
                                       : photoMemoList[index].memo),
                                   Row(
                                     children: [

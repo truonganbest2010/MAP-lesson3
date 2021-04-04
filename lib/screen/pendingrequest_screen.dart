@@ -73,7 +73,7 @@ class _PendingRequestState extends State<PendingRequestScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
-                                        fit: BoxFit.fitWidth,
+                                        fit: BoxFit.cover,
                                         image: NetworkImage(
                                             requestProfileList[index].profilePhotoURL)),
                                   ),
@@ -91,7 +91,10 @@ class _PendingRequestState extends State<PendingRequestScreen> {
                                   ),
                                 ),
                           title: Text(requestProfileList[index].name,
-                              style: Theme.of(context).textTheme.headline4),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20.0,
+                              )),
                           trailing: RawMaterialButton(
                             child: Text('Accept'),
                             onPressed: () => ctrl.accept(

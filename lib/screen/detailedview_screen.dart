@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
+import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/photomemo.dart';
+import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 
 import 'myView/myimage.dart';
@@ -28,6 +30,8 @@ class _DetailedViewState extends State<DetailedViewScreen> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String progressMessage;
 
+  String sharedWithOption;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +46,14 @@ class _DetailedViewState extends State<DetailedViewScreen> {
     user ??= args[Constant.ARG_USER];
     onePhotoMemoOriginal ??= args[Constant.ARG_ONE_PHOTOMEMO];
     onePhotoMemoTemp ??= PhotoMemo.clone(onePhotoMemoOriginal);
+    if (onePhotoMemoTemp.sharedWithMyFollowers == true) {
+      sharedWithOption = Constant.SRC_FOLLOWERS;
+    } else if (onePhotoMemoTemp.sharedWithMyFollowers == false) {
+      if (onePhotoMemoTemp.sharedWith.contains(user.email)) {
+        sharedWithOption = Constant.SRC_ONLY_ME;
+      } else
+        sharedWithOption = Constant.SRC_ONLY_WITH;
+    }
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -75,44 +87,45 @@ class _DetailedViewState extends State<DetailedViewScreen> {
                             fit: BoxFit.fill,
                           ),
                   ),
-                  editMode
-                      ? Positioned(
-                          right: 0.0,
-                          bottom: 0.0,
-                          child: Container(
-                            color: Colors.black,
-                            child: PopupMenuButton<String>(
-                              onSelected: con.getPhoto,
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: Constant.SRC_CAMERA,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.photo_camera,
-                                      ),
-                                      Text(Constant.SRC_CAMERA),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem(
-                                  value: Constant.SRC_GALLERY,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.photo_library,
-                                      ),
-                                      Text(Constant.SRC_GALLERY),
-                                    ],
-                                  ),
-                                ),
+                  Positioned(
+                    right: 0.0,
+                    bottom: 0.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20.0),
+                        color: Colors.black,
+                      ),
+                      child: PopupMenuButton<String>(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0)),
+                        icon: Icon(Icons.menu),
+                        enabled: editMode,
+                        onSelected: con.getPhoto,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: Constant.SRC_CAMERA,
+                            child: Row(
+                              children: [
+                                Icon(Icons.photo_camera),
+                                SizedBox(width: 10.0),
+                                Text(Constant.SRC_CAMERA),
                               ],
                             ),
                           ),
-                        )
-                      : SizedBox(
-                          height: 1.0,
-                        ),
+                          PopupMenuItem(
+                            value: Constant.SRC_GALLERY,
+                            child: Row(
+                              children: [
+                                Icon(Icons.photo_album),
+                                SizedBox(width: 10.0),
+                                Text(Constant.SRC_GALLERY),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                 ],
               ),
               progressMessage == null
@@ -121,42 +134,138 @@ class _DetailedViewState extends State<DetailedViewScreen> {
                       progressMessage,
                       style: Theme.of(context).textTheme.headline6,
                     ),
-              TextFormField(
-                enabled: editMode,
-                style: Theme.of(context).textTheme.headline6,
-                decoration: InputDecoration(
-                  hintText: 'Enter title',
+              Container(
+                margin: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30.0),
+                  color: Colors.black,
                 ),
-                initialValue: onePhotoMemoTemp.title,
-                autocorrect: true,
-                validator: PhotoMemo.validateTitle,
-                onSaved: con.saveTitle,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: TextFormField(
+                    enabled: editMode,
+                    style: Theme.of(context).textTheme.headline6,
+                    decoration: InputDecoration(
+                      hintText: 'Enter title',
+                    ),
+                    initialValue: onePhotoMemoTemp.title,
+                    autocorrect: true,
+                    validator: PhotoMemo.validateTitle,
+                    onSaved: con.saveTitle,
+                  ),
+                ),
               ),
-              TextFormField(
-                enabled: editMode,
-                style: Theme.of(context).textTheme.headline6,
-                decoration: InputDecoration(
-                  hintText: 'Enter memo',
+              Container(
+                margin: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30.0),
+                  color: Colors.black,
                 ),
-                initialValue: onePhotoMemoTemp.memo,
-                autocorrect: true,
-                keyboardType: TextInputType.multiline,
-                maxLines: 6,
-                validator: PhotoMemo.validateMemo,
-                onSaved: con.saveMemo,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: TextFormField(
+                    enabled: editMode,
+                    style: Theme.of(context).textTheme.headline6,
+                    decoration: InputDecoration(
+                      hintText: 'Enter memo',
+                    ),
+                    initialValue: onePhotoMemoTemp.memo,
+                    autocorrect: true,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: 6,
+                    validator: PhotoMemo.validateMemo,
+                    onSaved: con.saveMemo,
+                  ),
+                ),
               ),
-              TextFormField(
-                enabled: editMode,
-                style: Theme.of(context).textTheme.headline6,
-                decoration: InputDecoration(
-                  hintText: 'Enter Shared With (email list)',
+              // TextFormField(
+              //   enabled: editMode,
+              //   style: Theme.of(context).textTheme.headline6,
+              //   decoration: InputDecoration(
+              //     hintText: 'Enter Shared With (email list)',
+              //   ),
+              //   initialValue: onePhotoMemoTemp.sharedWith.join(','),
+              //   autocorrect: true,
+              //   keyboardType: TextInputType.multiline,
+              //   maxLines: 2,
+              //   validator: PhotoMemo.validateSharedWith,
+              //   onSaved: con.saveSharedWith,
+              // ),
+              Container(
+                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 5.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30.0),
+                  color: Colors.black,
                 ),
-                initialValue: onePhotoMemoTemp.sharedWith.join(','),
-                autocorrect: true,
-                keyboardType: TextInputType.multiline,
-                maxLines: 2,
-                validator: PhotoMemo.validateSharedWith,
-                onSaved: con.saveSharedWith,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text('Share With:'),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Row(
+                          children: [
+                            Text(sharedWithOption),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          child: PopupMenuButton<String>(
+                            enabled: editMode,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0)),
+                            icon: sharedWithOption == Constant.SRC_FOLLOWERS
+                                ? Icon(Icons.public)
+                                : sharedWithOption == Constant.SRC_ONLY_WITH
+                                    ? Icon(Icons.group)
+                                    : sharedWithOption == Constant.SRC_ONLY_ME
+                                        ? Icon(Icons.lock)
+                                        : Icon(Icons.menu),
+                            onSelected: con.getSharedWith,
+                            itemBuilder: (context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem(
+                                value: Constant.SRC_FOLLOWERS,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.public),
+                                    SizedBox(width: 10.0),
+                                    Text(Constant.SRC_FOLLOWERS),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: Constant.SRC_ONLY_WITH,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.group),
+                                    SizedBox(width: 10.0),
+                                    Text(Constant.SRC_ONLY_WITH),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: Constant.SRC_ONLY_ME,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.lock),
+                                    SizedBox(width: 10.0),
+                                    Text(Constant.SRC_ONLY_ME),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               SizedBox(
                 height: 5.0,
@@ -186,6 +295,10 @@ class _Controller {
   _DetailedViewState state;
   _Controller(this.state);
   File photoFile; // cam or gallery
+
+  List<String> sharedWithList = <String>[];
+
+  Map<String, bool> tempFollowerMap = {};
 
   void update() async {
     if (!state.formKey.currentState.validate()) return;
@@ -267,6 +380,160 @@ class _Controller {
     }
   }
 
+  void getSharedWith(String src) async {
+    try {
+      List<Follow> followerList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: false);
+      List<Profile> profile = <Profile>[];
+      for (var p in followerList) {
+        profile.add(await FirebaseController.getOneProfileDatabase(email: p.follower));
+      }
+
+      if (src == Constant.SRC_FOLLOWERS) {
+        state.render(() => state.sharedWithOption = Constant.SRC_FOLLOWERS);
+        state.onePhotoMemoTemp.sharedWithMyFollowers = true;
+        sharedWithList.clear();
+        for (var f in followerList) {
+          sharedWithList.add(f.follower);
+        }
+        state.render(() => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+      }
+      if (src == Constant.SRC_ONLY_WITH) {
+        state.onePhotoMemoTemp.sharedWithMyFollowers = false;
+        if (tempFollowerMap.length != followerList.length) {
+          for (var f in followerList) {
+            if (state.onePhotoMemoOriginal.sharedWith.contains(f.follower)) {
+              tempFollowerMap[f.follower] = true;
+            } else
+              tempFollowerMap[f.follower] = false;
+          }
+        }
+        showDialog(
+          context: state.context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: Text('Only With ...'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (var f in followerList)
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: profile[followerList.indexOf(f)].profilePhotoURL !=
+                                        null
+                                    ? Container(
+                                        width: 50.0,
+                                        height: 50.0,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                              fit: BoxFit.cover,
+                                              image: NetworkImage(
+                                                  profile[followerList.indexOf(f)]
+                                                      .profilePhotoURL)),
+                                        ),
+                                      )
+                                    : Container(
+                                        width: 50.0,
+                                        height: 50.0,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.grey,
+                                        ),
+                                        child: Icon(
+                                          Icons.person,
+                                          size: 50,
+                                        ),
+                                      ),
+                              ),
+                              Expanded(
+                                flex: 4,
+                                child: CheckboxListTile(
+                                  title: Text(profile[followerList.indexOf(f)].name),
+                                  value: tempFollowerMap[f.follower],
+                                  activeColor: Colors.blue,
+                                  checkColor: Colors.white,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      tempFollowerMap[f.follower] = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    RawMaterialButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      elevation: 7.0,
+                      fillColor: Colors.black,
+                      child: Icon(Icons.arrow_back),
+                      padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0)),
+                    ),
+                    RawMaterialButton(
+                      onPressed: () {
+                        sharedWithList.clear();
+                        tempFollowerMap.forEach((key, value) {
+                          if (value == true) {
+                            sharedWithList.add(key);
+                          }
+                        });
+                        if (sharedWithList.length == 0) {
+                          MyDialog.info(
+                            context: context,
+                            title: 'No user added',
+                            content: 'Choose users to share your photo memo',
+                          );
+                          sharedWithList.add(state.user.email);
+                          state.render(
+                              () => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+                        } else {
+                          state.render(
+                              () => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+                          Navigator.pop(context);
+                        }
+                      },
+                      elevation: 7.0,
+                      fillColor: Colors.black,
+                      child: Icon(Icons.check),
+                      padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0)),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      }
+      if (src == Constant.SRC_ONLY_ME) {
+        state.onePhotoMemoTemp.sharedWithMyFollowers = false;
+        sharedWithList.clear();
+        sharedWithList.add(state.user.email);
+        state.render(() => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+      }
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Oops',
+        content: '$e',
+      );
+    }
+  }
+
   void saveTitle(String value) {
     state.onePhotoMemoTemp.title = value;
   }
@@ -275,10 +542,10 @@ class _Controller {
     state.onePhotoMemoTemp.memo = value;
   }
 
-  void saveSharedWith(String value) {
-    if (value.trim().length != 0) {
-      state.onePhotoMemoTemp.sharedWith =
-          value.split(RegExp('(,| )+')).map((e) => e.trim()).toList();
-    }
-  }
+  // void saveSharedWith(String value) {
+  //   if (value.trim().length != 0) {
+  //     state.onePhotoMemoTemp.sharedWith =
+  //         value.split(RegExp('(,| )+')).map((e) => e.trim()).toList();
+  //   }
+  // }
 }
