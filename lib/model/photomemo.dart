@@ -9,6 +9,8 @@ class PhotoMemo {
   List<dynamic> sharedWith; // list of email
   List<dynamic> imageLables; // image identified by ML
 
+  bool sharedWithMyFollowers;
+
   // key for Firestore Docs
   static const TITLE = 'title';
   static const MEMO = 'memo';
@@ -18,6 +20,7 @@ class PhotoMemo {
   static const TIMESTAMP = 'timestamp';
   static const SHARED_WITH = 'sharedWith';
   static const IMAGE_LABELS = 'imageLabels';
+  static const SHARED_WITH_ALL_FOLLOWERS = 'sharedWithMyFollowers';
 
   PhotoMemo({
     this.docId,
@@ -29,6 +32,7 @@ class PhotoMemo {
     this.title,
     this.sharedWith,
     this.imageLables,
+    this.sharedWithMyFollowers,
   }) {
     this.sharedWith ??= [];
     this.imageLables ??= [];
@@ -46,6 +50,7 @@ class PhotoMemo {
     this.sharedWith.addAll(p.sharedWith);
     this.imageLables = [];
     this.imageLables.addAll(p.imageLables);
+    this.sharedWithMyFollowers = p.sharedWithMyFollowers;
   }
 
   // a = b ==> a.assign(b)
@@ -61,6 +66,7 @@ class PhotoMemo {
     this.sharedWith.addAll(p.sharedWith);
     this.imageLables.clear();
     this.imageLables.addAll(p.imageLables);
+    this.sharedWithMyFollowers = p.sharedWithMyFollowers;
   }
 
 // From Dart Object to Firestore Docs
@@ -74,6 +80,7 @@ class PhotoMemo {
       TIMESTAMP: this.timestamp,
       SHARED_WITH: this.sharedWith,
       IMAGE_LABELS: this.imageLables,
+      SHARED_WITH_ALL_FOLLOWERS: this.sharedWithMyFollowers,
     };
   }
 
@@ -90,6 +97,7 @@ class PhotoMemo {
       timestamp: doc[TIMESTAMP] == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
+      sharedWithMyFollowers: doc[SHARED_WITH_ALL_FOLLOWERS],
     );
   }
 

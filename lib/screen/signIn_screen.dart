@@ -191,7 +191,8 @@ class _Controller {
     try {
       List<Follow> followingList =
           await FirebaseController.getFollowingList(email: email);
-      List<Follow> followerList = await FirebaseController.getFollowerList(email: email);
+      List<Follow> followerList =
+          await FirebaseController.getFollowerList(email: email, pendingStatus: false);
       Profile profile = await FirebaseController.getOneProfileDatabase(email: email);
 
       MyDialog.circularProgressStop(state.context);

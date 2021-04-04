@@ -523,15 +523,22 @@ class _Controller {
 
   void goToDisplayFollower() async {
     try {
-      var pendingRequestList =
-          await FirebaseController.getPendingRequestList(email: state.user.email);
-      var followerList =
-          await FirebaseController.getFollowerList(email: state.user.email);
-
+      // get Pending Followers
+      var followerList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: true);
+      var pendingRequestList = <Follow>[];
+      for (var f in followerList) {
+        {
+          pendingRequestList.add(f);
+        }
+      }
+      // get Followers
+      followerList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: false);
       var profileList = <Profile>[];
       for (var f in followerList) {
-        var prf = await FirebaseController.getOneProfileDatabase(email: f.follower);
-        profileList.add(prf);
+        profileList
+            .add(await FirebaseController.getOneProfileDatabase(email: f.follower));
       }
       await Navigator.pushNamed(state.context, DisplayFollowerScreen.routeName,
           arguments: {
@@ -540,8 +547,8 @@ class _Controller {
             Constant.ARG_PROFILE_LIST: profileList,
             Constant.ARG_PENDING_REQUEST_LIST: pendingRequestList,
           });
-      state.followerList =
-          await FirebaseController.getFollowerList(email: state.user.email);
+      state.followerList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: false);
       state.render(() {});
     } catch (e) {
       MyDialog.info(

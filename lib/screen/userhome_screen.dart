@@ -176,7 +176,18 @@ class _UserHomeState extends State<UserHomeScreen> {
                                   Text(photoMemoList[index].memo.length >= 20
                                       ? photoMemoList[index].memo.substring(0, 20) + '...'
                                       : photoMemoList[index].memo),
-                                  Text('Shared With: ${photoMemoList[index].sharedWith}'),
+                                  Row(
+                                    children: [
+                                      Text('Shared With: '),
+                                      photoMemoList[index].sharedWithMyFollowers == true
+                                          ? Icon(Icons.public)
+                                          : photoMemoList[index]
+                                                  .sharedWith
+                                                  .contains(user.email)
+                                              ? Icon(Icons.lock)
+                                              : Icon(Icons.group)
+                                    ],
+                                  ),
                                   Text(
                                       'Date: ${photoMemoList[index].timestamp.toString().substring(0, 10)}'),
                                 ],

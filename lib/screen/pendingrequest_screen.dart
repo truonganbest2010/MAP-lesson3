@@ -124,8 +124,8 @@ class _Controller {
   void accept(Follow f, int index) async {
     try {
       await FirebaseController.acceptPendingRequest(f: f);
-      state.pendingRequestList =
-          await FirebaseController.getPendingRequestList(email: state.user.email);
+      state.pendingRequestList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: true);
       state.requestProfileList.removeAt(index);
       state.render(() {});
     } catch (e) {

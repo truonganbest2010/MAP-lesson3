@@ -176,9 +176,9 @@ class _FindPeopleState extends State<FindPeopleScreen> {
   }
 
   Widget getProfileList(BuildContext context) {
-    var tempFollowingList = <String>[];
+    var tempFollowingList = {};
     followingList.forEach((f) {
-      tempFollowingList.add(f.following);
+      tempFollowingList[f.following] = f.pendingStatus;
     });
     return Column(
       children: [
@@ -221,21 +221,8 @@ class _FindPeopleState extends State<FindPeopleScreen> {
                     ),
                     trailing: p.createdBy == user.email
                         ? SizedBox(width: 1.0)
-                        : tempFollowingList.contains(p.createdBy)
+                        : tempFollowingList[p.createdBy] == null
                             ? RawMaterialButton(
-                                onPressed: () async {
-                                  ctrl.showUnfollowAlertDialog(context, p);
-                                },
-                                elevation: 7.0,
-                                fillColor: Colors.blue[300],
-                                child: Text(
-                                  'Following',
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0)),
-                              )
-                            : RawMaterialButton(
                                 onPressed: () async {
                                   ctrl.follow(p.createdBy);
                                 },
@@ -244,7 +231,32 @@ class _FindPeopleState extends State<FindPeopleScreen> {
                                 child: Text('Follow'),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.0)),
-                              )),
+                              )
+                            : tempFollowingList[p.createdBy] == false
+                                ? RawMaterialButton(
+                                    onPressed: () async {
+                                      ctrl.showUnfollowAlertDialog(context, p);
+                                    },
+                                    elevation: 7.0,
+                                    fillColor: Colors.blue[300],
+                                    child: Text(
+                                      'Following',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10.0)),
+                                  )
+                                : RawMaterialButton(
+                                    onPressed: () => ctrl.unfollow(p.createdBy),
+                                    elevation: 7.0,
+                                    fillColor: Colors.green[500],
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(5.0, 0, 5.0, 0),
+                                      child: Text('Request Pending'),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10.0)),
+                                  )),
               ))
       ],
     );

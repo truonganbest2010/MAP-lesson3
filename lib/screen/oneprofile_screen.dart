@@ -53,7 +53,7 @@ class _OneProfileState extends State<OneProfileScreen> {
               Expanded(
                 flex: 3,
                 child: SingleChildScrollView(
-                                  child: Column(
+                  child: Column(
                     children: [
                       Stack(
                         children: [
@@ -67,22 +67,27 @@ class _OneProfileState extends State<OneProfileScreen> {
                             padding: EdgeInsets.all(10.0),
                             shape: CircleBorder(),
                           ),
-                          Positioned(
-                            right: 0.0,
-                            top: 0.0,
-                            child: RawMaterialButton(
-                              onPressed: () async {
-                                ctrl.toggleEdit();
-                              },
-                              elevation: 7.0,
-                              fillColor: editToggle == true ? Colors.green : Colors.black,
-                              child: editToggle == true
-                                  ? Icon(Icons.check)
-                                  : Icon(Icons.edit), // Save/Edit
-                              padding: EdgeInsets.all(10.0),
-                              shape: CircleBorder(),
-                            ),
-                          ),
+                          profile.createdBy == user.email
+                              ? Positioned(
+                                  right: 0.0,
+                                  top: 0.0,
+                                  child: RawMaterialButton(
+                                    onPressed: () async {
+                                      ctrl.toggleEdit();
+                                    },
+                                    elevation: 7.0,
+                                    fillColor:
+                                        editToggle == true ? Colors.green : Colors.black,
+                                    child: editToggle == true
+                                        ? Icon(Icons.check)
+                                        : Icon(Icons.edit), // Save/Edit
+                                    padding: EdgeInsets.all(10.0),
+                                    shape: CircleBorder(),
+                                  ),
+                                )
+                              : SizedBox(
+                                  width: 1.0,
+                                ),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.black,
@@ -109,9 +114,9 @@ class _OneProfileState extends State<OneProfileScreen> {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             image: DecorationImage(
-                                                fit: BoxFit.fill,
-                                                image:
-                                                    NetworkImage(profile.profilePhotoURL)),
+                                                fit: BoxFit.cover,
+                                                image: NetworkImage(
+                                                    profile.profilePhotoURL)),
                                           ))
                                       : Container(
                                           width: 190.0,
@@ -138,85 +143,94 @@ class _OneProfileState extends State<OneProfileScreen> {
                               ),
                             ),
                           ),
-                          Positioned(
-                            right: MediaQuery.of(context).size.width * 0.2,
-                            bottom: 50.0,
-                            child: Container(
-                              child: PopupMenuButton<String>(
-                                color: Colors.grey[800],
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(30.0))),
-                                icon: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey[700],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.settings,
-                                      size: 30.0,
-                                    ),
-                                  ),
-                                ),
-                                onSelected: ctrl.profilePhotoSetting,
-                                itemBuilder: (context) => <PopupMenuEntry<String>>[
-                                  (profile.profilePhotoURL == null)
-                                      ? PopupMenuItem(
-                                          value: Constant.SRC_SELECT_PROFILE_PHOTO,
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.add),
-                                              Text(' Select Photo'),
-                                            ],
-                                          ),
-                                        )
-                                      : PopupMenuItem(
-                                          value: Constant.SRC_REMOVE_PROFILE_PHOTO,
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.delete),
-                                              Text(' Remove Photo'),
-                                            ],
+                          profile.createdBy == user.email
+                              ? Positioned(
+                                  right: MediaQuery.of(context).size.width * 0.2,
+                                  bottom: 50.0,
+                                  child: Container(
+                                    child: PopupMenuButton<String>(
+                                      color: Colors.grey[800],
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.all(Radius.circular(30.0))),
+                                      icon: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.grey[700],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Icon(
+                                            Icons.settings,
+                                            size: 30.0,
                                           ),
                                         ),
-                                ],
-                              ),
-                            ),
-                          ),
+                                      ),
+                                      onSelected: ctrl.profilePhotoSetting,
+                                      itemBuilder: (context) => <PopupMenuEntry<String>>[
+                                        (profile.profilePhotoURL == null)
+                                            ? PopupMenuItem(
+                                                value: Constant.SRC_SELECT_PROFILE_PHOTO,
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.add),
+                                                    Text(' Select Photo'),
+                                                  ],
+                                                ),
+                                              )
+                                            : PopupMenuItem(
+                                                value: Constant.SRC_REMOVE_PROFILE_PHOTO,
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.delete),
+                                                    Text(' Remove Photo'),
+                                                  ],
+                                                ),
+                                              ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(
+                                  width: 1.0,
+                                ),
                         ],
                       ),
                       SizedBox(height: 10.0),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: RawMaterialButton(
-                                onPressed: () {},
-                                elevation: 7.0,
-                                fillColor: Colors.black,
-                                child: Text('Follower'), // Follower
-                                padding: EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 20.0),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0)),
+                      profile.createdBy == user.email
+                          ? Padding(
+                              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: RawMaterialButton(
+                                      onPressed: () {},
+                                      elevation: 7.0,
+                                      fillColor: Colors.black,
+                                      child: Text('Follower'), // Follower
+                                      padding:
+                                          EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 20.0),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30.0)),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Expanded(
+                                    child: RawMaterialButton(
+                                      onPressed: () {},
+                                      elevation: 7.0,
+                                      fillColor: Colors.black,
+                                      child: Text('Following'), // Following
+                                      padding:
+                                          EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 20.0),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30.0)),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            SizedBox(width: 10.0),
-                            Expanded(
-                              child: RawMaterialButton(
-                                onPressed: () {},
-                                elevation: 7.0,
-                                fillColor: Colors.black,
-                                child: Text('Following'), // Following
-                                padding: EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 20.0),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                            )
+                          : SizedBox(width: 1.0),
                     ],
                   ),
                 ),

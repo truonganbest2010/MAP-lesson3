@@ -5,6 +5,7 @@ import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
+import 'package:lesson3/screen/oneprofile_screen.dart';
 import 'package:lesson3/screen/pendingrequest_screen.dart';
 
 class DisplayFollowerScreen extends StatefulWidget {
@@ -160,7 +161,7 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
                               title: Text(profileList[index].name,
                                   style: Theme.of(context).textTheme.headline4),
                               trailing: Text(profileList[index].createdBy),
-                              onTap: () {},
+                              onTap: () => ctrl.goToProfile(profileList[index].createdBy),
                             ),
                           ),
                           Divider(
@@ -184,8 +185,8 @@ class _Controller {
 
   void goToPendingRequestsList() async {
     try {
-      state.pendingRequestList =
-          await FirebaseController.getPendingRequestList(email: state.user.email);
+      state.pendingRequestList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: true);
       var requestProfileList = <Profile>[];
       for (var p in state.pendingRequestList) {
         requestProfileList
@@ -197,16 +198,32 @@ class _Controller {
             Constant.ARG_PENDING_REQUEST_LIST: state.pendingRequestList,
             "ARG_REQUEST_LIST": requestProfileList,
           });
-      var followerList =
-          await FirebaseController.getFollowerList(email: state.user.email);
-      state.pendingRequestList =
-          await FirebaseController.getPendingRequestList(email: state.user.email);
+      var followerList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: false);
+      state.pendingRequestList = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: true);
       var pList = <Profile>[];
       for (var p in followerList) {
         pList.add(await FirebaseController.getOneProfileDatabase(email: p.follower));
       }
       state.profileList = pList;
       state.render(() {});
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Oops',
+        content: '$e',
+      );
+    }
+  }
+
+  void goToProfile(String email) async {
+    try {
+      var prf = await FirebaseController.getOneProfileDatabase(email: email);
+      Navigator.pushNamed(state.context, OneProfileScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_ONE_PROFILE: prf,
+      });
     } catch (e) {
       MyDialog.info(
         context: state.context,

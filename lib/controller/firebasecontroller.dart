@@ -21,6 +21,10 @@ class FirebaseController {
     return userCredential.user;
   }
 
+  static Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   static Future<void> createAccount(
       {@required String email, @required String password}) async {
     await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -77,24 +81,12 @@ class FirebaseController {
     return result;
   }
 
-  static Future<List<Follow>> getFollowerList({@required String email}) async {
+  static Future<List<Follow>> getFollowerList(
+      {@required String email, @required bool pendingStatus}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.FOLLOW_DATABASE)
         .where(Follow.FOLLOWING, isEqualTo: email)
-        .where(Follow.PENDING_STATUS, isEqualTo: false)
-        .get();
-    var result = <Follow>[];
-    querySnapshot.docs.forEach((doc) {
-      result.add(Follow.deserialize(doc.data(), doc.id));
-    });
-    return result;
-  }
-
-  static Future<List<Follow>> getPendingRequestList({@required String email}) async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection(Constant.FOLLOW_DATABASE)
-        .where(Follow.FOLLOWING, isEqualTo: email)
-        .where(Follow.PENDING_STATUS, isEqualTo: true)
+        .where(Follow.PENDING_STATUS, isEqualTo: pendingStatus)
         .get();
     var result = <Follow>[];
     querySnapshot.docs.forEach((doc) {
@@ -109,10 +101,6 @@ class FirebaseController {
         .collection(Constant.FOLLOW_DATABASE)
         .doc(f.docId)
         .update(f.serialize());
-  }
-
-  static Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
   }
 
   static Future uploadPhotoFile({
