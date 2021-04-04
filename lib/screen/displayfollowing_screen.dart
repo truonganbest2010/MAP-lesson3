@@ -6,23 +6,20 @@ import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/oneprofile_screen.dart';
-import 'package:lesson3/screen/pendingrequest_screen.dart';
 
-class DisplayFollowerScreen extends StatefulWidget {
-  static const routeName = '/displayFollowerScreen';
+class DisplayFollowingScreen extends StatefulWidget {
+  static const routeName = '/displayFollowingScreen';
   @override
   State<StatefulWidget> createState() {
-    return _DisplayFollowerState();
+    return _DisplayFollowingState();
   }
 }
 
-class _DisplayFollowerState extends State<DisplayFollowerScreen> {
+class _DisplayFollowingState extends State<DisplayFollowingScreen> {
   _Controller ctrl;
   User user;
   Profile userProfile;
   List<Profile> profileList;
-  List<Follow> pendingRequestList;
-  bool notification;
 
   @override
   void initState() {
@@ -38,8 +35,7 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
     user ??= args[Constant.ARG_USER];
     userProfile ??= args[Constant.ARG_ONE_PROFILE];
     profileList ??= args[Constant.ARG_PROFILE_LIST];
-    pendingRequestList ??= args[Constant.ARG_PENDING_REQUEST_LIST];
-    notification ??= args["NOTIFICATION"];
+
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -49,7 +45,7 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
           ),
         ],
         title: Text(
-          'Followers',
+          'Following',
           style: TextStyle(
             fontFamily: "Pacifico",
             fontSize: 30.0,
@@ -58,55 +54,6 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
       ),
       body: Column(
         children: [
-          Expanded(
-            flex: 1,
-            child: Column(
-              children: [
-                Container(
-                  margin: EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: RawMaterialButton(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 7,
-                                  child: Text(
-                                    'See all requests',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Icon(
-                                    Icons.notifications,
-                                    color: notification == false
-                                        ? Colors.white
-                                        : Colors.yellow,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          onPressed: () =>
-                              ctrl.goToPendingRequestsList(), // goto Pending Request Page
-                          elevation: 7.0,
-                          fillColor: Colors.black,
-                          padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             flex: 9,
             child: profileList.length == 0
@@ -118,7 +65,7 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Text(
-                          'No follower',
+                          'No following',
                           style: Theme.of(context).textTheme.headline5,
                         ),
                       ),
@@ -185,42 +132,8 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
 }
 
 class _Controller {
-  _DisplayFollowerState state;
+  _DisplayFollowingState state;
   _Controller(this.state);
-
-  void goToPendingRequestsList() async {
-    try {
-      state.pendingRequestList = await FirebaseController.getFollowerList(
-          email: state.user.email, pendingStatus: true);
-      var requestProfileList = <Profile>[];
-      for (var p in state.pendingRequestList) {
-        requestProfileList
-            .add(await FirebaseController.getOneProfileDatabase(email: p.follower));
-      }
-      await Navigator.pushNamed(state.context, PendingRequestScreen.routeName,
-          arguments: {
-            Constant.ARG_USER: state.user,
-            Constant.ARG_PENDING_REQUEST_LIST: state.pendingRequestList,
-            "ARG_REQUEST_LIST": requestProfileList,
-          });
-      var followerList = await FirebaseController.getFollowerList(
-          email: state.user.email, pendingStatus: false);
-
-      var pList = <Profile>[];
-      for (var p in followerList) {
-        pList.add(await FirebaseController.getOneProfileDatabase(email: p.follower));
-      }
-      state.profileList = pList;
-      state.notification = false;
-      state.render(() {});
-    } catch (e) {
-      MyDialog.info(
-        context: state.context,
-        title: 'Oops',
-        content: '$e',
-      );
-    }
-  }
 
   void goToProfile(String email) async {
     try {

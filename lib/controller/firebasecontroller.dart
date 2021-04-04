@@ -73,6 +73,7 @@ class FirebaseController {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.FOLLOW_DATABASE)
         .where(Follow.FOLLOWER, isEqualTo: email)
+        .where(Follow.PENDING_STATUS, isEqualTo: false)
         .get();
     var result = <Follow>[];
     querySnapshot.docs.forEach((doc) {
@@ -83,24 +84,49 @@ class FirebaseController {
 
   static Future<List<Follow>> getFollowerList(
       {@required String email, @required bool pendingStatus}) async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection(Constant.FOLLOW_DATABASE)
-        .where(Follow.FOLLOWING, isEqualTo: email)
-        .where(Follow.PENDING_STATUS, isEqualTo: pendingStatus)
-        .get();
+    // get all follower data
     var result = <Follow>[];
-    querySnapshot.docs.forEach((doc) {
-      result.add(Follow.deserialize(doc.data(), doc.id));
-    });
+    if (pendingStatus == null) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.FOLLOW_DATABASE)
+          .where(Follow.FOLLOWING, isEqualTo: email)
+          .get();
+      querySnapshot.docs.forEach((doc) {
+        result.add(Follow.deserialize(doc.data(), doc.id));
+      });
+    }
+    // get pending requests
+    if (pendingStatus == true) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.FOLLOW_DATABASE)
+          .where(Follow.FOLLOWING, isEqualTo: email)
+          .where(Follow.PENDING_STATUS, isEqualTo: true)
+          .get();
+      querySnapshot.docs.forEach((doc) {
+        result.add(Follow.deserialize(doc.data(), doc.id));
+      });
+    }
+    // get followers
+    if (pendingStatus == false) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.FOLLOW_DATABASE)
+          .where(Follow.FOLLOWING, isEqualTo: email)
+          .where(Follow.PENDING_STATUS, isEqualTo: false)
+          .get();
+      querySnapshot.docs.forEach((doc) {
+        result.add(Follow.deserialize(doc.data(), doc.id));
+      });
+    }
     return result;
   }
 
   static Future<void> acceptPendingRequest({@required Follow f}) async {
-    f.pendingStatus = false;
+    Map<String, dynamic> updateInfo = {};
+    updateInfo[Follow.PENDING_STATUS] = false;
     await FirebaseFirestore.instance
         .collection(Constant.FOLLOW_DATABASE)
         .doc(f.docId)
-        .update(f.serialize());
+        .update(updateInfo);
   }
 
   static Future uploadPhotoFile({

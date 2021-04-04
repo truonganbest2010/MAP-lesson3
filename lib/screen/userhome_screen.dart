@@ -188,9 +188,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                                       Text('Shared With: '),
                                       photoMemoList[index].sharedWithMyFollowers == true
                                           ? Icon(Icons.public)
-                                          : photoMemoList[index]
-                                                  .sharedWith
-                                                  .contains(user.email)
+                                          : photoMemoList[index].sharedWith.isEmpty
                                               ? Icon(Icons.lock)
                                               : Icon(Icons.group)
                                     ],

@@ -265,10 +265,6 @@ class _Controller {
     if (!state.formKey.currentState.validate()) return;
     state.formKey.currentState.save();
 
-    if (sharedWithList.length == 0) {
-      sharedWithList.add(state.user.email);
-    }
-
     MyDialog.circularProgressStart(state.context);
     try {
       Map photoInfo = await FirebaseController.uploadPhotoFile(
@@ -451,7 +447,6 @@ class _Controller {
                           );
                           state.render(
                               () => state.sharedWithOption = Constant.SRC_ONLY_ME);
-                          sharedWithList.add(state.user.email);
                         } else {
                           state.render(
                               () => state.sharedWithOption = Constant.SRC_ONLY_WITH);
@@ -475,7 +470,6 @@ class _Controller {
       if (src == Constant.SRC_ONLY_ME) {
         tempMemo.sharedWithMyFollowers = false;
         sharedWithList.clear();
-        sharedWithList.add(state.user.email);
         state.render(() => state.sharedWithOption = Constant.SRC_ONLY_ME);
       }
     } catch (e) {

@@ -49,7 +49,7 @@ class _DetailedViewState extends State<DetailedViewScreen> {
     if (onePhotoMemoTemp.sharedWithMyFollowers == true) {
       sharedWithOption = Constant.SRC_FOLLOWERS;
     } else if (onePhotoMemoTemp.sharedWithMyFollowers == false) {
-      if (onePhotoMemoTemp.sharedWith.contains(user.email)) {
+      if (onePhotoMemoTemp.sharedWith.isEmpty) {
         sharedWithOption = Constant.SRC_ONLY_ME;
       } else
         sharedWithOption = Constant.SRC_ONLY_WITH;
@@ -347,6 +347,11 @@ class _Controller {
           state.onePhotoMemoOriginal.sharedWith, state.onePhotoMemoTemp.sharedWith)) {
         updateInfo[PhotoMemo.SHARED_WITH] = state.onePhotoMemoTemp.sharedWith;
       }
+      if (state.onePhotoMemoOriginal.sharedWithMyFollowers !=
+          state.onePhotoMemoTemp.sharedWithMyFollowers) {
+        updateInfo[PhotoMemo.SHARED_WITH_ALL_FOLLOWERS] =
+            state.onePhotoMemoTemp.sharedWithMyFollowers;
+      }
 
       updateInfo[PhotoMemo.TIMESTAMP] = DateTime.now();
       await FirebaseController.updatePhotoMemos(state.onePhotoMemoTemp.docId, updateInfo);
@@ -391,15 +396,17 @@ class _Controller {
 
       if (src == Constant.SRC_FOLLOWERS) {
         state.render(() => state.sharedWithOption = Constant.SRC_FOLLOWERS);
-        state.onePhotoMemoTemp.sharedWithMyFollowers = true;
+
         sharedWithList.clear();
         for (var f in followerList) {
           sharedWithList.add(f.follower);
         }
-        state.render(() => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+        state.render(() {
+          state.onePhotoMemoTemp.sharedWith = sharedWithList;
+          state.onePhotoMemoTemp.sharedWithMyFollowers = true;
+        });
       }
       if (src == Constant.SRC_ONLY_WITH) {
-        state.onePhotoMemoTemp.sharedWithMyFollowers = false;
         if (tempFollowerMap.length != followerList.length) {
           for (var f in followerList) {
             if (state.onePhotoMemoOriginal.sharedWith.contains(f.follower)) {
@@ -496,12 +503,16 @@ class _Controller {
                             title: 'No user added',
                             content: 'Choose users to share your photo memo',
                           );
-                          sharedWithList.add(state.user.email);
-                          state.render(
-                              () => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+
+                          state.render(() {
+                            state.onePhotoMemoTemp.sharedWith = sharedWithList;
+                            state.onePhotoMemoTemp.sharedWithMyFollowers = false;
+                          });
                         } else {
-                          state.render(
-                              () => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+                          state.render(() {
+                            state.onePhotoMemoTemp.sharedWith = sharedWithList;
+                            state.onePhotoMemoTemp.sharedWithMyFollowers = false;
+                          });
                           Navigator.pop(context);
                         }
                       },
@@ -520,10 +531,12 @@ class _Controller {
         );
       }
       if (src == Constant.SRC_ONLY_ME) {
-        state.onePhotoMemoTemp.sharedWithMyFollowers = false;
         sharedWithList.clear();
-        sharedWithList.add(state.user.email);
-        state.render(() => state.onePhotoMemoTemp.sharedWith = sharedWithList);
+
+        state.render(() {
+          state.onePhotoMemoTemp.sharedWith = sharedWithList;
+          state.onePhotoMemoTemp.sharedWithMyFollowers = false;
+        });
       }
     } catch (e) {
       MyDialog.info(

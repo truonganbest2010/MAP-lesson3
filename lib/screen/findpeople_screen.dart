@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/follow.dart';
+import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 
@@ -294,6 +295,16 @@ class _Controller {
       // state.followingList.removeWhere((f) => f == follow);
       state.followingList =
           await FirebaseController.getFollowingList(email: state.user.email);
+      var photoMemoSharedWithMe =
+          await FirebaseController.getPhotoMemoSharedWithMe(email: state.user.email);
+      for (var p in photoMemoSharedWithMe) {
+        if (p.sharedWith.contains(state.user.email)) {
+          state.render(() => p.sharedWith.remove(state.user.email));
+          Map<String, dynamic> updateInfo = {};
+          updateInfo[PhotoMemo.SHARED_WITH] = p.sharedWith;
+          await FirebaseController.updatePhotoMemos(p.docId, updateInfo);
+        }
+      }
 
       state.render(() {});
       print(state.followingList.length);

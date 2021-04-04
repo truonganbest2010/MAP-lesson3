@@ -6,6 +6,7 @@ import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
 import 'package:lesson3/screen/displayfollowers_screen.dart';
+import 'package:lesson3/screen/displayfollowing_screen.dart';
 import 'package:lesson3/screen/findpeople_screen.dart';
 import 'package:lesson3/screen/settings_screen.dart';
 import 'package:lesson3/screen/sharedwith_screen.dart';
@@ -276,7 +277,7 @@ class _HomeState extends State<HomeScreen> {
                             SizedBox(width: 10.0),
                             Expanded(
                               child: RawMaterialButton(
-                                onPressed: () {},
+                                onPressed: () => ctrl.goToDisplayFollowing(),
                                 elevation: 7.0,
                                 fillColor: Colors.black,
                                 child: Text('Following  ${followingList.length}',
@@ -522,35 +523,73 @@ class _Controller {
   }
 
   void goToDisplayFollower() async {
+    MyDialog.circularProgressStart(state.context);
     try {
       // get Pending Followers
-      var followerList = await FirebaseController.getFollowerList(
-          email: state.user.email, pendingStatus: true);
+      var followerDataFetch = await FirebaseController.getFollowerList(
+          email: state.user.email, pendingStatus: null);
+
       var pendingRequestList = <Follow>[];
-      for (var f in followerList) {
-        {
-          pendingRequestList.add(f);
-        }
+      for (var f in followerDataFetch) {
+        if (f.pendingStatus == true) pendingRequestList.add(f);
       }
+      bool notification;
+      if (pendingRequestList.length != 0)
+        notification = true;
+      else
+        notification = false;
+
       // get Followers
-      followerList = await FirebaseController.getFollowerList(
-          email: state.user.email, pendingStatus: false);
       var profileList = <Profile>[];
-      for (var f in followerList) {
-        profileList
-            .add(await FirebaseController.getOneProfileDatabase(email: f.follower));
+      for (var f in followerDataFetch) {
+        if (f.pendingStatus == false)
+          profileList
+              .add(await FirebaseController.getOneProfileDatabase(email: f.follower));
       }
+      MyDialog.circularProgressStop(state.context);
       await Navigator.pushNamed(state.context, DisplayFollowerScreen.routeName,
           arguments: {
             Constant.ARG_USER: state.user,
             Constant.ARG_ONE_PROFILE: state.userProfile,
             Constant.ARG_PROFILE_LIST: profileList,
             Constant.ARG_PENDING_REQUEST_LIST: pendingRequestList,
+            "NOTIFICATION": notification,
           });
       state.followerList = await FirebaseController.getFollowerList(
           email: state.user.email, pendingStatus: false);
       state.render(() {});
     } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context,
+        title: 'Oops',
+        content: '$e',
+      );
+    }
+  }
+
+  void goToDisplayFollowing() async {
+    MyDialog.circularProgressStart(state.context);
+    try {
+      var followingList =
+          await FirebaseController.getFollowingList(email: state.user.email);
+      var profileList = <Profile>[];
+      for (var f in followingList) {
+        profileList
+            .add(await FirebaseController.getOneProfileDatabase(email: f.following));
+      }
+      await Navigator.pushNamed(state.context, DisplayFollowingScreen.routeName,
+          arguments: {
+            Constant.ARG_USER: state.user,
+            Constant.ARG_ONE_PROFILE: state.userProfile,
+            Constant.ARG_PROFILE_LIST: profileList,
+          });
+      MyDialog.circularProgressStop(state.context);
+      state.followingList =
+          await FirebaseController.getFollowingList(email: state.user.email);
+      state.render(() {});
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
       MyDialog.info(
         context: state.context,
         title: 'Oops',
