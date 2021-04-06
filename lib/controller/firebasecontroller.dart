@@ -73,7 +73,6 @@ class FirebaseController {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.FOLLOW_DATABASE)
         .where(Follow.FOLLOWER, isEqualTo: email)
-        .where(Follow.PENDING_STATUS, isEqualTo: false)
         .get();
     var result = <Follow>[];
     querySnapshot.docs.forEach((doc) {
