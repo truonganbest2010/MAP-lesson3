@@ -10,6 +10,7 @@ class PhotoMemo {
   List<dynamic> imageLables; // image identified by ML
 
   bool sharedWithMyFollowers;
+  List<dynamic> likeList;
 
   // key for Firestore Docs
   static const TITLE = 'title';
@@ -21,6 +22,7 @@ class PhotoMemo {
   static const SHARED_WITH = 'sharedWith';
   static const IMAGE_LABELS = 'imageLabels';
   static const SHARED_WITH_ALL_FOLLOWERS = 'sharedWithMyFollowers';
+  static const LIKE_LIST = 'likeList';
 
   PhotoMemo({
     this.docId,
@@ -33,9 +35,11 @@ class PhotoMemo {
     this.sharedWith,
     this.imageLables,
     this.sharedWithMyFollowers,
+    this.likeList,
   }) {
     this.sharedWith ??= [];
     this.imageLables ??= [];
+    this.likeList ??= [];
   }
 
   PhotoMemo.clone(PhotoMemo p) {
@@ -51,6 +55,8 @@ class PhotoMemo {
     this.imageLables = [];
     this.imageLables.addAll(p.imageLables);
     this.sharedWithMyFollowers = p.sharedWithMyFollowers;
+    this.likeList = [];
+    this.likeList.addAll(p.likeList);
   }
 
   // a = b ==> a.assign(b)
@@ -67,6 +73,8 @@ class PhotoMemo {
     this.imageLables.clear();
     this.imageLables.addAll(p.imageLables);
     this.sharedWithMyFollowers = p.sharedWithMyFollowers;
+    this.likeList.clear();
+    this.likeList.addAll(p.likeList);
   }
 
 // From Dart Object to Firestore Docs
@@ -81,6 +89,7 @@ class PhotoMemo {
       SHARED_WITH: this.sharedWith,
       IMAGE_LABELS: this.imageLables,
       SHARED_WITH_ALL_FOLLOWERS: this.sharedWithMyFollowers,
+      LIKE_LIST: this.likeList,
     };
   }
 
@@ -98,6 +107,7 @@ class PhotoMemo {
           ? null
           : DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
       sharedWithMyFollowers: doc[SHARED_WITH_ALL_FOLLOWERS],
+      likeList: doc[LIKE_LIST],
     );
   }
 

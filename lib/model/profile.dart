@@ -6,7 +6,6 @@ class Profile {
   String createdBy;
   String bioDescription;
   bool admin;
-  List<dynamic> followingList;
   Map<dynamic, dynamic> commentsCount;
 
   static const NAME = 'name';
@@ -15,7 +14,6 @@ class Profile {
   static const CREATED_BY = 'createdBy';
   static const BIO_DESCRIPTION = 'bioDescription';
   static const ADMIN = 'admin';
-  static const FOLLOWING_LIST = 'followingList';
   static const COMMENTS_COUNT = 'commentsCount';
 
   Profile({
@@ -26,10 +24,8 @@ class Profile {
     this.createdBy,
     this.bioDescription,
     this.admin,
-    this.followingList,
     this.commentsCount,
   }) {
-    this.followingList ??= [];
     this.commentsCount ??= {};
   }
 
@@ -41,8 +37,6 @@ class Profile {
     this.createdBy = p.createdBy;
     this.bioDescription = p.bioDescription;
     this.admin = p.admin;
-    this.followingList = [];
-    this.followingList.addAll(p.followingList);
     this.commentsCount = {};
     this.commentsCount = p.commentsCount;
   }
@@ -55,8 +49,6 @@ class Profile {
     this.createdBy = p.createdBy;
     this.bioDescription = p.bioDescription;
     this.admin = p.admin;
-    this.followingList = [];
-    this.followingList.addAll(p.followingList);
     this.commentsCount = p.commentsCount;
   }
 
@@ -68,7 +60,6 @@ class Profile {
       CREATED_BY: this.createdBy,
       BIO_DESCRIPTION: this.bioDescription,
       ADMIN: this.admin,
-      FOLLOWING_LIST: this.followingList,
       COMMENTS_COUNT: this.commentsCount,
     };
   }
@@ -85,7 +76,6 @@ class Profile {
       createdBy: doc[CREATED_BY],
       bioDescription: doc[BIO_DESCRIPTION],
       admin: doc[ADMIN],
-      followingList: doc[FOLLOWING_LIST],
       commentsCount: doc[COMMENTS_COUNT],
     );
   }

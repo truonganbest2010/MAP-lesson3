@@ -88,7 +88,7 @@ class _DetailedViewState extends State<DetailedViewScreen> {
                           ),
                   ),
                   Positioned(
-                    right: 0.0,
+                    right: 20.0,
                     bottom: 0.0,
                     child: Container(
                       decoration: BoxDecoration(

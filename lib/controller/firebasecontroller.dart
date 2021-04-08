@@ -208,6 +208,16 @@ class FirebaseController {
     return result;
   }
 
+  static Future<List<dynamic>> getLikeList(String photoMemoId) async {
+    var docSnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PHOTOMEMO_COLLECTION)
+        .doc(photoMemoId)
+        .get();
+    List<dynamic> result = docSnapshot.data()[PhotoMemo.LIKE_LIST];
+
+    return result;
+  }
+
   static Future<List<Comment>> getCommentList({@required String photomemoId}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.COMMENT_COLLECTION)

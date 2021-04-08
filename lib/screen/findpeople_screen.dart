@@ -80,7 +80,7 @@ class _FindPeopleState extends State<FindPeopleScreen> {
                         'Find People',
                         style: TextStyle(
                           fontFamily: "Pacifico",
-                          fontSize: 25.0,
+                          fontSize: 30.0,
                         ),
                       ),
                     ),
@@ -218,7 +218,10 @@ class _FindPeopleState extends State<FindPeopleScreen> {
                           ),
                     title: Text(
                       p.name,
-                      style: Theme.of(context).textTheme.headline5,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.0,
+                      ),
                     ),
                     trailing: p.createdBy == user.email
                         ? SizedBox(width: 1.0)

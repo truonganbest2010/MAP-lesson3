@@ -157,7 +157,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                                 width: 60.0,
                                 height: 60.0,
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
+                                  shape: BoxShape.rectangle,
                                   image: DecorationImage(
                                       fit: BoxFit.cover,
                                       image: NetworkImage(photoMemoList[index].photoURL)),
@@ -179,22 +179,30 @@ class _UserHomeState extends State<UserHomeScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  photoMemoList[index].sharedWithMyFollowers == true
+                                      ? Icon(Icons.public)
+                                      : photoMemoList[index].sharedWith.isEmpty
+                                          ? Icon(Icons.lock)
+                                          : Icon(Icons.group),
+                                  SizedBox(height: 10.0),
                                   Text(photoMemoList[index].memo.length > 10
                                       ? photoMemoList[index].memo.substring(0, 10) +
                                           ' ...'
                                       : photoMemoList[index].memo),
-                                  Row(
-                                    children: [
-                                      Text('Shared With: '),
-                                      photoMemoList[index].sharedWithMyFollowers == true
-                                          ? Icon(Icons.public)
-                                          : photoMemoList[index].sharedWith.isEmpty
-                                              ? Icon(Icons.lock)
-                                              : Icon(Icons.group)
-                                    ],
-                                  ),
-                                  Text(
-                                      'Date: ${photoMemoList[index].timestamp.toString().substring(0, 10)}'),
+                                  Text('Date: ' +
+                                      photoMemoList[index]
+                                          .timestamp
+                                          .toString()
+                                          .substring(5, 7) + // mm
+                                      photoMemoList[index]
+                                          .timestamp
+                                          .toString()
+                                          .substring(7, 10) + // dd
+                                      '-' +
+                                      photoMemoList[index]
+                                          .timestamp
+                                          .toString()
+                                          .substring(0, 4)),
                                 ],
                               ),
                             ),
@@ -209,10 +217,31 @@ class _UserHomeState extends State<UserHomeScreen> {
                               Expanded(
                                 flex: 1,
                                 child: RawMaterialButton(
-                                  onPressed: () {},
+                                  onPressed:
+                                      photoMemoList[index].likeList.contains(user.email)
+                                          ? () => con.unlikePost(index)
+                                          : () => con.likePost(index),
                                   elevation: 7.0,
-                                  fillColor: Colors.black,
-                                  child: Icon(Icons.thumb_up),
+                                  fillColor:
+                                      photoMemoList[index].likeList.contains(user.email)
+                                          ? Colors.blue
+                                          : Colors.black,
+                                  child: Row(
+                                    children: [
+                                      Expanded(flex: 4, child: Icon(Icons.thumb_up)),
+                                      Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            photoMemoList[index]
+                                                .likeList
+                                                .length
+                                                .toString(),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15.0),
+                                          )),
+                                    ],
+                                  ),
                                   padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(20.0)),
@@ -363,6 +392,48 @@ class _Controller {
     state.render(() {});
   }
 
+  void likePost(int index) async {
+    try {
+      var likeList =
+          await FirebaseController.getLikeList(state.photoMemoList[index].docId);
+      likeList.add(state.user.email);
+      Map<String, dynamic> updateLike = {};
+      updateLike[PhotoMemo.LIKE_LIST] = likeList;
+      await FirebaseController.updatePhotoMemos(
+          state.photoMemoList[index].docId, updateLike);
+      state.render(
+        () => state.photoMemoList[index].likeList.add(state.user.email),
+      );
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Cant load',
+        content: '$e',
+      );
+    }
+  }
+
+  void unlikePost(int index) async {
+    try {
+      var likeList =
+          await FirebaseController.getLikeList(state.photoMemoList[index].docId);
+      likeList.remove(state.user.email);
+      Map<String, dynamic> updateLike = {};
+      updateLike[PhotoMemo.LIKE_LIST] = likeList;
+      await FirebaseController.updatePhotoMemos(
+          state.photoMemoList[index].docId, updateLike);
+      state.render(
+        () => state.photoMemoList[index].likeList.remove(state.user.email),
+      );
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Cant load',
+        content: '$e',
+      );
+    }
+  }
+
   void seePhotoMemo(int index) async {
     state.render(() => delIndex = null);
     try {
@@ -380,6 +451,7 @@ class _Controller {
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
             Constant.ARG_USER: state.user,
+            Constant.ARG_ONE_PROFILE: state.userProfile,
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
             "PHOTO_MEMO_OWNER": state.userProfile.name,

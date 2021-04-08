@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lesson3/controller/firebasecontroller.dart';
@@ -21,6 +23,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
   _Controller ctrl;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   User user;
+  Profile userProfile;
   PhotoMemo photoMemo;
   List<Comment> commentList;
   String photoMemoOwner;
@@ -40,6 +43,7 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
+    userProfile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemo ??= args[Constant.ARG_ONE_PHOTOMEMO];
     commentList ??= args[Constant.ARG_COMMENTLIST];
     photoMemoOwner ??= args["PHOTO_MEMO_OWNER"];
@@ -74,20 +78,38 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                           ),
                         ),
                         Positioned(
+                          left: 10.0,
+                          bottom: 0.0,
+                          child: RawMaterialButton(
+                            onPressed: () => ctrl.showWhomLiked(),
+                            elevation: 7.0,
+                            fillColor: Colors.black,
+                            child: Text(
+                              '${photoMemo.likeList.length.toString()} people liked this photo memo',
+                              style:
+                                  TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+                            ),
+                            padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0)),
+                          ),
+                        ),
+                        Positioned(
                           right: 0.0,
                           bottom: 0.0,
                           child: RawMaterialButton(
                             onPressed: () {},
                             elevation: 7.0,
                             fillColor: Colors.black,
-                            child: Icon(Icons.thumb_up),
-                            padding: EdgeInsets.all(15.0),
+                            child: Icon(Icons.share),
+                            padding: EdgeInsets.all(10.0),
                             shape: CircleBorder(),
                           ),
                         ),
                       ],
                     ),
                     Container(
+                      margin: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 0.0),
                       width: MediaQuery.of(context).size.width,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20.0),
@@ -109,7 +131,17 @@ class _OnePhotoMemoDetailedState extends State<OnePhotoMemoDetailedScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text(photoMemo.timestamp.toString().substring(0, 16)),
+                                Text(// mm/dd/yyyy
+                                    photoMemo.timestamp.toString().substring(5, 7) + // mm
+                                        photoMemo.timestamp
+                                            .toString()
+                                            .substring(7, 10) + // dd
+                                        '-' +
+                                        photoMemo.timestamp
+                                            .toString()
+                                            .substring(0, 4) + // yyyy
+                                        '   ' +
+                                        photoMemo.timestamp.toString().substring(10, 16)),
                               ],
                             ),
                           ),
@@ -240,6 +272,105 @@ class _Controller {
   _OnePhotoMemoDetailedState state;
   _Controller(this.state);
   Comment tempComment = Comment();
+
+  void showWhomLiked() async {
+    if (state.photoMemo.likeList.length == 0) return;
+    List<Profile> likedProfileList = <Profile>[];
+    try {
+      for (var email in state.photoMemo.likeList) {
+        var p = await FirebaseController.getOneProfileDatabase(email: email);
+        likedProfileList.add(p);
+      }
+    } catch (e) {
+      MyDialog.info(context: state.context, title: 'Cant load', content: '$e');
+    }
+
+    showDialog(
+      context: state.context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Icon(Icons.thumb_up),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    for (var p in likedProfileList)
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.0),
+                          color: Colors.grey,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                  width: 40.0,
+                                  height: 40.0,
+                                  decoration: p.profilePhotoURL != null
+                                      ? BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                              fit: BoxFit.cover,
+                                              image: NetworkImage(p.profilePhotoURL)),
+                                        )
+                                      : BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.grey,
+                                        ),
+                                  child: p.profilePhotoURL != null
+                                      ? SizedBox()
+                                      : Icon(
+                                          Icons.person,
+                                          size: 40,
+                                        )),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: p.name == state.userProfile.name
+                                  ? Text(
+                                      '${p.name} (You)',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.0,
+                                      ),
+                                    )
+                                  : Text(
+                                      p.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.0,
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                RawMaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  elevation: 7.0,
+                  fillColor: Colors.black,
+                  child: Icon(Icons.arrow_back),
+                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                  shape:
+                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void submit() async {
     if (!state.formKey.currentState.validate()) return;

@@ -605,6 +605,7 @@ class _Controller {
 
       await Navigator.pushNamed(state.context, SharedWithScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
+        Constant.ARG_ONE_PROFILE: state.userProfile,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
       });
     } catch (e) {
