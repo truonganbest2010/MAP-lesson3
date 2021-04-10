@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/screen/addphotomemo_screen.dart';
 import 'package:lesson3/screen/addprofilephoto_screen.dart';
+import 'package:lesson3/screen/admin_management_screen.dart';
 import 'package:lesson3/screen/deleteaccount_screen.dart';
 import 'package:lesson3/screen/detailedview_screen.dart';
 import 'package:lesson3/screen/displayfollowers_screen.dart';
@@ -51,6 +52,7 @@ class PhotoMemoApp extends StatelessWidget {
         DisplayFollowerScreen.routeName: (context) => DisplayFollowerScreen(),
         DisplayFollowingScreen.routeName: (context) => DisplayFollowingScreen(),
         PendingRequestScreen.routeName: (context) => PendingRequestScreen(),
+        AdminManagementScreen.routeName: (context) => AdminManagementScreen(),
       },
     );
   }

@@ -10,6 +10,7 @@ import 'package:lesson3/model/follow.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/profile.dart';
+import 'package:lesson3/model/report.dart';
 
 class FirebaseController {
   static Future<User> signIn({@required String email, @required String password}) async {
@@ -40,6 +41,13 @@ class FirebaseController {
     return ref.id;
   }
 
+  static Future<String> createReport(Report report) async {
+    var ref = await FirebaseFirestore.instance
+        .collection(Constant.REPORT_DATABASE)
+        .add(report.serialize());
+    return ref.id;
+  }
+
   static Future<Profile> getOneProfileDatabase({@required String email}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.PROFILE_DATABASE)
@@ -54,10 +62,10 @@ class FirebaseController {
     return result;
   }
 
-  static Future<List<Profile>> getProfileListForSearch({@required String email}) async {
+  static Future<List<Profile>> getProfileList({@required String email}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.PROFILE_DATABASE)
-        .where(Profile.CREATED_BY, isNotEqualTo: email)
+        // .where(Profile.CREATED_BY, isNotEqualTo: email)
         .get();
     var result = <Profile>[];
     querySnapshot.docs.forEach((doc) {
@@ -364,6 +372,26 @@ class FirebaseController {
       await deletePhotoMemo(pf); // delete photo memos
     }
 
+    if (p.admin == true) {
+      Map<String, dynamic> updateInfo;
+      var photoMemoList = await FirebaseController.getAllPhotoMemoList(email: email);
+      photoMemoList.forEach((p) async {
+        updateInfo = {};
+        var tempP = p.grantedPermission;
+        tempP.remove(email);
+        updateInfo[PhotoMemo.GRANTED_PERMISSION] = tempP;
+        await FirebaseController.updatePhotoMemos(p.docId, updateInfo);
+      });
+      var commentList = await FirebaseController.getAllCommentList(email: email);
+      commentList.forEach((c) async {
+        updateInfo = {};
+        var tempC = c.grantedPermission;
+        tempC.remove(email);
+        updateInfo[Comment.GRANTED_PERMISSION] = tempC;
+        await FirebaseController.updateComment(c.commentId, updateInfo);
+      });
+    }
+
     await FirebaseFirestore.instance
         .collection(Constant.FOLLOW_DATABASE)
         .where(Follow.FOLLOWER, isEqualTo: email)
@@ -400,5 +428,40 @@ class FirebaseController {
         EmailAuthProvider.credential(email: email, password: password);
     var result = await user.reauthenticateWithCredential(credential);
     await result.user.delete(); // delete user account
+  }
+
+  // admin part
+
+  static Future<List<PhotoMemo>> getAllPhotoMemoList({@required String email}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PHOTOMEMO_COLLECTION)
+        .where(PhotoMemo.GRANTED_PERMISSION, arrayContains: email)
+        .get();
+
+    var result = <PhotoMemo>[];
+    querySnapshot.docs.forEach((doc) {
+      result.add(PhotoMemo.deserialize(doc.data(), doc.id));
+    });
+    return result;
+  }
+
+  static Future<List<Comment>> getAllCommentList({@required String email}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.COMMENT_COLLECTION)
+        .where(PhotoMemo.GRANTED_PERMISSION, arrayContains: email)
+        .get();
+
+    var result = <Comment>[];
+    querySnapshot.docs.forEach((doc) {
+      result.add(Comment.deserialize(doc.data(), doc.id));
+    });
+    return result;
+  }
+
+  static Future<void> updateComment(String docId, Map<String, dynamic> updateInfo) async {
+    await FirebaseFirestore.instance
+        .collection(Constant.COMMENT_COLLECTION)
+        .doc(docId)
+        .update(updateInfo);
   }
 }

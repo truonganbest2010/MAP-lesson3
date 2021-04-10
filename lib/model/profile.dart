@@ -82,7 +82,7 @@ class Profile {
 
   String validateName(String value) {
     if (value == null || value.length < 1)
-      return 'Enter your name';
+      return 'Enter name';
     else if (value.length >= 20)
       return 'Name too long';
     else

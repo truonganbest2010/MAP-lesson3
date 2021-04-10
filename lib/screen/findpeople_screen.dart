@@ -322,8 +322,7 @@ class _Controller {
 
   void cancel() async {
     state.formKey.currentState.reset();
-    state.profileList =
-        await FirebaseController.getProfileListForSearch(email: state.user.email);
+    state.profileList = await FirebaseController.getProfileList(email: state.user.email);
 
     state.render(() {
       FocusScope.of(state.context).unfocus();
@@ -342,8 +341,7 @@ class _Controller {
           }
         }
       } else {
-        result =
-            await FirebaseController.getProfileListForSearch(email: state.user.email);
+        result = await FirebaseController.getProfileList(email: state.user.email);
       }
 
       state.render(() => state.profileList = result);

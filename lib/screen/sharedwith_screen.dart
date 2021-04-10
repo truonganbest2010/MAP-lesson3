@@ -5,6 +5,7 @@ import 'package:lesson3/model/comment.dart';
 import 'package:lesson3/model/constant.dart';
 import 'package:lesson3/model/photomemo.dart';
 import 'package:lesson3/model/profile.dart';
+import 'package:lesson3/model/report.dart';
 import 'package:lesson3/screen/myView/myDialog.dart';
 import 'package:lesson3/screen/onephotomemodetailed_screen.dart';
 
@@ -21,6 +22,7 @@ class _SharedWithState extends State<SharedWithScreen> {
   User user;
   Profile userProfile;
   List<PhotoMemo> photoMemoList;
+  List<Profile> profileList;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _SharedWithState extends State<SharedWithScreen> {
     user ??= args[Constant.ARG_USER];
     userProfile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    profileList ??= args[Constant.ARG_PROFILE_LIST];
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -96,33 +99,45 @@ class _SharedWithState extends State<SharedWithScreen> {
                                     image: NetworkImage(photoMemoList[index].photoURL)),
                               )),
                           trailing: RawMaterialButton(
-                            onPressed: () {},
+                            onPressed: () => con.report(index),
                             elevation: 7.0,
                             fillColor: Colors.black,
                             child: Icon(Icons.flag),
                             padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                             shape: CircleBorder(),
                           ),
-                          title: Text(photoMemoList[index].title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20.0,
-                              )),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          title: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
                               children: [
                                 photoMemoList[index].sharedWithMyFollowers == true
                                     ? Icon(Icons.public)
                                     : photoMemoList[index].sharedWith.isEmpty
                                         ? Icon(Icons.lock)
                                         : Icon(Icons.group),
-                                SizedBox(height: 10.0),
+                                SizedBox(
+                                  width: 5.0,
+                                ),
+                                Text(profileList[index].name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.0,
+                                    )),
+                              ],
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(photoMemoList[index].title,
+                                    style: TextStyle(
+                                      fontSize: 20.0,
+                                    )),
                                 Text(photoMemoList[index].memo.length >= 15
                                     ? photoMemoList[index].memo.substring(0, 15) + '...'
                                     : photoMemoList[index].memo),
-                                Text('Created By: ${photoMemoList[index].createdBy}'),
                                 Text('Date: ' +
                                     photoMemoList[index]
                                         .timestamp
@@ -205,6 +220,8 @@ class _SharedWithState extends State<SharedWithScreen> {
 class _Controller {
   _SharedWithState state;
   _Controller(this.state);
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  String reportInput;
 
   void seeOnePhotoMemo(int index) async {
     try {
@@ -216,8 +233,6 @@ class _Controller {
         Profile p = await FirebaseController.getOneProfileDatabase(email: c.createdBy);
         commentOwner.add(p);
       }
-      Profile p = await FirebaseController.getOneProfileDatabase(
-          email: state.photoMemoList[index].createdBy);
 
       await Navigator.pushNamed(state.context, OnePhotoMemoDetailedScreen.routeName,
           arguments: {
@@ -225,7 +240,7 @@ class _Controller {
             Constant.ARG_ONE_PROFILE: state.userProfile,
             Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
             Constant.ARG_COMMENTLIST: commentList,
-            "PHOTO_MEMO_OWNER": p.name,
+            "PHOTO_MEMO_OWNER": state.profileList[index].name,
             "COMMENT_OWNER": commentOwner,
           });
     } catch (e) {
@@ -277,5 +292,143 @@ class _Controller {
         content: '$e',
       );
     }
+  }
+
+  void report(int index) {
+    try {
+      showDialog(
+        context: state.context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(
+                  'Report',
+                  style: TextStyle(
+                    fontFamily: "Pacifico",
+                    fontSize: 30.0,
+                  ),
+                ),
+                content: Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(
+                              left: 5.0, top: 50.0, right: 20.0, bottom: 20.0),
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.all(20.0),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Colors.black,
+                                    ),
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(30.0),
+                                    ),
+                                  ),
+                                  hintText: 'Feedback',
+
+                                  fillColor: Colors
+                                      .grey[900], // Theme.of(context).backgroundColor,
+                                  filled: true,
+                                ),
+                                keyboardType: TextInputType.multiline,
+                                maxLines: 10,
+                                autocorrect: true,
+                                validator: validateReport,
+                                onSaved: saveReport,
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                actions: [
+                  RawMaterialButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    elevation: 7.0,
+                    fillColor: Colors.black,
+                    child: Icon(Icons.arrow_back),
+                    padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                    shape:
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                  ),
+                  RawMaterialButton(
+                    onPressed: () => sendReport(index),
+                    elevation: 7.0,
+                    fillColor: Colors.black,
+                    child: Text('Send'),
+                    padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                    shape:
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Cant report',
+        content: '$e',
+      );
+    }
+  }
+
+  void sendReport(int index) async {
+    if (!formKey.currentState.validate()) return;
+    formKey.currentState.save();
+
+    try {
+      Report tempReport = Report();
+      tempReport.photoMemoId = state.photoMemoList[index].docId;
+      tempReport.report = reportInput;
+      tempReport.timestamp = DateTime.now();
+      await FirebaseController.createReport(tempReport);
+      formKey.currentState.reset();
+      showDialog(
+        context: state.context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text('Thanks for letting us know!'),
+          content: Text(''),
+          actions: [
+            FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'OK',
+                  style: Theme.of(context).textTheme.button,
+                ))
+          ],
+        ),
+      );
+    } catch (e) {
+      MyDialog.info(context: state.context, title: 'Failed', content: '$e');
+    }
+  }
+
+  String validateReport(String value) {
+    if (value.length < 5)
+      return 'add feedback';
+    else
+      return null;
+  }
+
+  void saveReport(String value) {
+    reportInput = value;
   }
 }

@@ -376,7 +376,18 @@ class _Controller {
     if (!state.formKey.currentState.validate()) return;
     state.formKey.currentState.save();
 
+    MyDialog.circularProgressStart(state.context);
     try {
+      // granted permission for admin
+      List<Profile> profileList =
+          await FirebaseController.getProfileList(email: state.user.email);
+      List<dynamic> grantedPermissionList = <dynamic>[];
+      for (var p in profileList) {
+        if (p.admin == true) {
+          grantedPermissionList.add(p.createdBy);
+        }
+      }
+      tempComment.grantedPermission = grantedPermissionList;
       tempComment.timestamp = DateTime.now();
       tempComment.photoMemoId = state.photoMemo.docId;
       tempComment.createdBy = state.user.email;
@@ -393,11 +404,12 @@ class _Controller {
         cOwner.add(p);
       }
       state.commentOwner = cOwner;
-
+      MyDialog.circularProgressStop(state.context);
       state.render(() {
         clearText();
       });
     } catch (e) {
+      MyDialog.circularProgressStop(state.context);
       MyDialog.info(
         context: state.context,
         title: 'Submit Comment Error',

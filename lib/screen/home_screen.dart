@@ -13,6 +13,7 @@ import 'package:lesson3/screen/sharedwith_screen.dart';
 import 'package:lesson3/screen/userhome_screen.dart';
 
 import 'addprofilephoto_screen.dart';
+import 'admin_management_screen.dart';
 import 'myView/myDialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -127,14 +128,16 @@ class _HomeState extends State<HomeScreen> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10.0),
-                                  color: Colors.black,
+                                  color: userProfile.admin == true
+                                      ? Colors.red[700]
+                                      : Colors.blue[700],
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     'Admin',
                                     style: TextStyle(
-                                      color: Colors.red[700],
+                                      color: Colors.white,
                                       fontSize: 15.0,
                                     ),
                                   ),
@@ -337,7 +340,7 @@ class _HomeState extends State<HomeScreen> {
                                 children: [
                                   SizedBox(width: 5.0),
                                   RawMaterialButton(
-                                    onPressed: () {},
+                                    onPressed: () => ctrl.goToAdminManagement(),
                                     elevation: 7.0,
                                     fillColor: Colors.black,
                                     child: Icon(Icons.insert_chart),
@@ -602,11 +605,17 @@ class _Controller {
     try {
       List<PhotoMemo> photoMemoList =
           await FirebaseController.getPhotoMemoSharedWithMe(email: state.user.email);
+      List<Profile> profileList = <Profile>[];
+      for (var pm in photoMemoList) {
+        profileList
+            .add(await FirebaseController.getOneProfileDatabase(email: pm.createdBy));
+      }
 
       await Navigator.pushNamed(state.context, SharedWithScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
         Constant.ARG_ONE_PROFILE: state.userProfile,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
+        Constant.ARG_PROFILE_LIST: profileList,
       });
     } catch (e) {
       MyDialog.info(
@@ -654,7 +663,7 @@ class _Controller {
     MyDialog.circularProgressStart(state.context);
     try {
       List<Profile> profileList =
-          await FirebaseController.getProfileListForSearch(email: state.user.email);
+          await FirebaseController.getProfileList(email: state.user.email);
 
       await Navigator.pushNamed(state.context, FindPeopleScreen.routeName, arguments: {
         Constant.ARG_USER: state.user,
@@ -669,6 +678,25 @@ class _Controller {
     } catch (e) {
       MyDialog.circularProgressStop(state.context);
 
+      MyDialog.info(
+        context: state.context,
+        title: 'Failed',
+        content: '$e',
+      );
+    }
+  }
+
+  // admin only
+  void goToAdminManagement() async {
+    try {
+      var profileList = <Profile>[];
+      profileList = await FirebaseController.getProfileList(email: state.user.email);
+      Navigator.pushNamed(state.context, AdminManagementScreen.routeName, arguments: {
+        Constant.ARG_USER: state.user,
+        Constant.ARG_ONE_PROFILE: state.userProfile,
+        Constant.ARG_PROFILE_LIST: profileList,
+      });
+    } catch (e) {
       MyDialog.info(
         context: state.context,
         title: 'Failed',

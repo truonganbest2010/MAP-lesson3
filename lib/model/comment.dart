@@ -6,12 +6,15 @@ class Comment {
   String createdBy; // created by the commentor
   String sharedWith; // shared with owner of the photomemo
 
+  List<dynamic> grantedPermission;
+
   // key for Firestore Docs
   static const PHOTOMEMOID = 'photomemoId';
   static const COMMENT = 'comment';
   static const TIMESTAMP = 'timestamp';
   static const CREATEDBY = 'createdBy';
   static const SHAREDWITH = 'sharedWith';
+  static const GRANTED_PERMISSION = 'grantedPermission';
 
   Comment({
     this.commentId,
@@ -20,7 +23,10 @@ class Comment {
     this.timestamp,
     this.createdBy,
     this.sharedWith,
-  });
+    this.grantedPermission,
+  }) {
+    this.grantedPermission ??= [];
+  }
 
   Comment.clone(Comment c) {
     this.photoMemoId = c.photoMemoId;
@@ -28,6 +34,8 @@ class Comment {
     this.timestamp = c.timestamp;
     this.createdBy = c.createdBy;
     this.sharedWith = c.sharedWith;
+    this.grantedPermission = [];
+    this.grantedPermission.addAll(c.grantedPermission);
   }
 
   void assign(Comment c) {
@@ -36,6 +44,8 @@ class Comment {
     this.timestamp = c.timestamp;
     this.createdBy = c.createdBy;
     this.sharedWith = c.sharedWith;
+    this.grantedPermission = [];
+    this.grantedPermission.addAll(c.grantedPermission);
   }
 
   // From Dart object to Firestore Docs
@@ -46,6 +56,7 @@ class Comment {
       TIMESTAMP: this.timestamp,
       CREATEDBY: this.createdBy,
       SHAREDWITH: this.sharedWith,
+      GRANTED_PERMISSION: this.grantedPermission,
     };
   }
 
@@ -60,6 +71,7 @@ class Comment {
           : DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
       createdBy: doc[CREATEDBY],
       sharedWith: doc[SHAREDWITH],
+      grantedPermission: doc[GRANTED_PERMISSION],
     );
   }
 

@@ -287,6 +287,16 @@ class _Controller {
           await FirebaseController.getImageLabels(photoFile: state.photo);
       state.render(() => state.progressMessage = null);
 
+      // granted permission for admin
+      List<Profile> profileList =
+          await FirebaseController.getProfileList(email: state.user.email);
+      List<dynamic> grantedPermissionList = <dynamic>[];
+      for (var p in profileList) {
+        if (p.admin == true) {
+          grantedPermissionList.add(p.createdBy);
+        }
+      }
+
       //
       tempMemo.photoFilename = photoInfo[Constant.ARG_FILENAME];
       tempMemo.photoURL = photoInfo[Constant.ARG_DOWNLOADURL];
@@ -294,6 +304,7 @@ class _Controller {
       tempMemo.createdBy = state.user.email;
       tempMemo.sharedWith = sharedWithList;
       tempMemo.imageLables = imageLabels;
+      tempMemo.grantedPermission = grantedPermissionList;
       String docId = await FirebaseController.addPhotoMemo(tempMemo);
       tempMemo.docId = docId;
       state.photoMemoList.insert(0, tempMemo);

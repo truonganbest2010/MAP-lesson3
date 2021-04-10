@@ -11,6 +11,7 @@ class PhotoMemo {
 
   bool sharedWithMyFollowers;
   List<dynamic> likeList;
+  List<dynamic> grantedPermission;
 
   // key for Firestore Docs
   static const TITLE = 'title';
@@ -23,6 +24,7 @@ class PhotoMemo {
   static const IMAGE_LABELS = 'imageLabels';
   static const SHARED_WITH_ALL_FOLLOWERS = 'sharedWithMyFollowers';
   static const LIKE_LIST = 'likeList';
+  static const GRANTED_PERMISSION = 'grantedPermission';
 
   PhotoMemo({
     this.docId,
@@ -36,10 +38,12 @@ class PhotoMemo {
     this.imageLables,
     this.sharedWithMyFollowers,
     this.likeList,
+    this.grantedPermission,
   }) {
     this.sharedWith ??= [];
     this.imageLables ??= [];
     this.likeList ??= [];
+    this.grantedPermission ??= [];
   }
 
   PhotoMemo.clone(PhotoMemo p) {
@@ -57,6 +61,8 @@ class PhotoMemo {
     this.sharedWithMyFollowers = p.sharedWithMyFollowers;
     this.likeList = [];
     this.likeList.addAll(p.likeList);
+    this.grantedPermission = [];
+    this.grantedPermission.addAll(p.grantedPermission);
   }
 
   // a = b ==> a.assign(b)
@@ -75,6 +81,8 @@ class PhotoMemo {
     this.sharedWithMyFollowers = p.sharedWithMyFollowers;
     this.likeList.clear();
     this.likeList.addAll(p.likeList);
+    this.grantedPermission = [];
+    this.grantedPermission.addAll(p.grantedPermission);
   }
 
 // From Dart Object to Firestore Docs
@@ -90,6 +98,7 @@ class PhotoMemo {
       IMAGE_LABELS: this.imageLables,
       SHARED_WITH_ALL_FOLLOWERS: this.sharedWithMyFollowers,
       LIKE_LIST: this.likeList,
+      GRANTED_PERMISSION: this.grantedPermission,
     };
   }
 
@@ -108,6 +117,7 @@ class PhotoMemo {
           : DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
       sharedWithMyFollowers: doc[SHARED_WITH_ALL_FOLLOWERS],
       likeList: doc[LIKE_LIST],
+      grantedPermission: doc[GRANTED_PERMISSION],
     );
   }
 

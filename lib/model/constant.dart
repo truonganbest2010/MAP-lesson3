@@ -33,6 +33,7 @@ class Constant {
   static const COMMENT_COLLECTION = 'commentSections';
   static const PROFILE_DATABASE = 'profileDatabase';
   static const FOLLOW_DATABASE = 'followDatabase';
+  static const REPORT_DATABASE = 'reportDatabase';
 
   static const ARG_DOWNLOADURL = 'downloadurl';
   static const ARG_FILENAME = 'filename';
