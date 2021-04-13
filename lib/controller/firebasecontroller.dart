@@ -48,6 +48,19 @@ class FirebaseController {
     return ref.id;
   }
 
+  static Future<List<Report>> getReport() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.REPORT_DATABASE)
+        .orderBy(Report.TIMESTAMP, descending: true)
+        .get();
+
+    var reportList = <Report>[];
+    querySnapshot.docs.forEach((doc) {
+      reportList.add(Report.deserialize(doc.data(), doc.id));
+    });
+    return reportList;
+  }
+
   static Future<Profile> getOneProfileDatabase({@required String email}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.PROFILE_DATABASE)
@@ -463,5 +476,37 @@ class FirebaseController {
         .collection(Constant.COMMENT_COLLECTION)
         .doc(docId)
         .update(updateInfo);
+  }
+
+  static Future<PhotoMemo> getPhotoMemoByDocId(String docId) async {
+    DocumentSnapshot queryDocumentSnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PHOTOMEMO_COLLECTION)
+        .doc(docId)
+        .get();
+
+    var photoMemo = PhotoMemo.deserialize(
+      queryDocumentSnapshot.data(),
+      queryDocumentSnapshot.id,
+    );
+
+    return photoMemo;
+  }
+
+  static Future<void> discardReport(Report r) async {
+    await FirebaseFirestore.instance
+        .collection(Constant.REPORT_DATABASE)
+        .doc(r.docId)
+        .delete();
+  }
+
+  static Future<void> removeAllReportOfAPhotoMemo(PhotoMemo p) async {
+    // report removed if found
+    await FirebaseFirestore.instance
+        .collection(Constant.REPORT_DATABASE)
+        .where(Report.PHOTOMEMO_ID, isEqualTo: p.docId)
+        .get()
+        .then((value) => value.docs.forEach((doc) {
+              doc.reference.delete();
+            }));
   }
 }

@@ -98,14 +98,16 @@ class _SharedWithState extends State<SharedWithScreen> {
                                     fit: BoxFit.cover,
                                     image: NetworkImage(photoMemoList[index].photoURL)),
                               )),
-                          trailing: RawMaterialButton(
-                            onPressed: () => con.report(index),
-                            elevation: 7.0,
-                            fillColor: Colors.black,
-                            child: Icon(Icons.flag),
-                            padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                            shape: CircleBorder(),
-                          ),
+                          trailing: userProfile.admin == true
+                              ? SizedBox(width: 1.0)
+                              : RawMaterialButton(
+                                  onPressed: () => con.report(index),
+                                  elevation: 7.0,
+                                  fillColor: Colors.black,
+                                  child: Icon(Icons.flag),
+                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                  shape: CircleBorder(),
+                                ),
                           title: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
@@ -310,43 +312,48 @@ class _Controller {
                     fontSize: 30.0,
                   ),
                 ),
-                content: Form(
-                  key: formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(
-                              left: 5.0, top: 50.0, right: 20.0, bottom: 20.0),
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.all(20.0),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Colors.black,
+                content: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: Form(
+                    key: formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(
+                                left: 5.0, top: 50.0, right: 20.0, bottom: 20.0),
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(20.0),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.black,
+                                      ),
+                                      borderRadius: const BorderRadius.all(
+                                        const Radius.circular(30.0),
+                                      ),
                                     ),
-                                    borderRadius: const BorderRadius.all(
-                                      const Radius.circular(30.0),
-                                    ),
-                                  ),
-                                  hintText: 'Feedback',
+                                    hintText: 'Feedback',
 
-                                  fillColor: Colors
-                                      .grey[900], // Theme.of(context).backgroundColor,
-                                  filled: true,
-                                ),
-                                keyboardType: TextInputType.multiline,
-                                maxLines: 10,
-                                autocorrect: true,
-                                validator: validateReport,
-                                onSaved: saveReport,
-                              )
-                            ],
+                                    fillColor: Colors
+                                        .grey[900], // Theme.of(context).backgroundColor,
+                                    filled: true,
+                                  ),
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: 10,
+                                  autocorrect: true,
+                                  validator: validateReport,
+                                  onSaved: saveReport,
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

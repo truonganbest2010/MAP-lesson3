@@ -305,6 +305,7 @@ class _Controller {
       tempMemo.sharedWith = sharedWithList;
       tempMemo.imageLables = imageLabels;
       tempMemo.grantedPermission = grantedPermissionList;
+      tempMemo.suspendedStatus = false;
       String docId = await FirebaseController.addPhotoMemo(tempMemo);
       tempMemo.docId = docId;
       state.photoMemoList.insert(0, tempMemo);

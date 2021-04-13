@@ -12,6 +12,7 @@ class PhotoMemo {
   bool sharedWithMyFollowers;
   List<dynamic> likeList;
   List<dynamic> grantedPermission;
+  bool suspendedStatus;
 
   // key for Firestore Docs
   static const TITLE = 'title';
@@ -25,6 +26,7 @@ class PhotoMemo {
   static const SHARED_WITH_ALL_FOLLOWERS = 'sharedWithMyFollowers';
   static const LIKE_LIST = 'likeList';
   static const GRANTED_PERMISSION = 'grantedPermission';
+  static const SUSPENDED_STATUS = 'suspendedStatus';
 
   PhotoMemo({
     this.docId,
@@ -39,6 +41,7 @@ class PhotoMemo {
     this.sharedWithMyFollowers,
     this.likeList,
     this.grantedPermission,
+    this.suspendedStatus,
   }) {
     this.sharedWith ??= [];
     this.imageLables ??= [];
@@ -63,6 +66,7 @@ class PhotoMemo {
     this.likeList.addAll(p.likeList);
     this.grantedPermission = [];
     this.grantedPermission.addAll(p.grantedPermission);
+    this.suspendedStatus = p.suspendedStatus;
   }
 
   // a = b ==> a.assign(b)
@@ -83,6 +87,7 @@ class PhotoMemo {
     this.likeList.addAll(p.likeList);
     this.grantedPermission = [];
     this.grantedPermission.addAll(p.grantedPermission);
+    this.suspendedStatus = p.suspendedStatus;
   }
 
 // From Dart Object to Firestore Docs
@@ -99,6 +104,7 @@ class PhotoMemo {
       SHARED_WITH_ALL_FOLLOWERS: this.sharedWithMyFollowers,
       LIKE_LIST: this.likeList,
       GRANTED_PERMISSION: this.grantedPermission,
+      SUSPENDED_STATUS: this.suspendedStatus,
     };
   }
 
@@ -118,6 +124,7 @@ class PhotoMemo {
       sharedWithMyFollowers: doc[SHARED_WITH_ALL_FOLLOWERS],
       likeList: doc[LIKE_LIST],
       grantedPermission: doc[GRANTED_PERMISSION],
+      suspendedStatus: doc[SUSPENDED_STATUS],
     );
   }
 

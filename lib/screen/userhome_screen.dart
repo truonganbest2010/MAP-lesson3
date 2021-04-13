@@ -152,7 +152,6 @@ class _UserHomeState extends State<UserHomeScreen> {
                           ),
                           child: ListTile(
                             // Each item
-
                             leading: Container(
                                 width: 60.0,
                                 height: 60.0,
@@ -162,10 +161,12 @@ class _UserHomeState extends State<UserHomeScreen> {
                                       fit: BoxFit.cover,
                                       image: NetworkImage(photoMemoList[index].photoURL)),
                                 )),
-                            trailing: IconButton(
-                              onPressed: () => con.onTap(index),
-                              icon: Icon(Icons.settings),
-                            ),
+                            trailing: photoMemoList[index].suspendedStatus == true
+                                ? SizedBox(width: 1.0)
+                                : IconButton(
+                                    onPressed: () => con.onTap(index),
+                                    icon: Icon(Icons.settings),
+                                  ),
                             title: Text(
                                 photoMemoList[index].title.length > 10
                                     ? photoMemoList[index].title.substring(0, 10) + ' ...'
@@ -206,82 +207,113 @@ class _UserHomeState extends State<UserHomeScreen> {
                                 ],
                               ),
                             ),
-                            onTap: () => con.seePhotoMemo(index),
+                            onTap: photoMemoList[index].suspendedStatus == true
+                                ? () {}
+                                : () => con.seePhotoMemo(index),
                             onLongPress: () => con.onLongPress(index),
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: RawMaterialButton(
-                                  onPressed:
-                                      photoMemoList[index].likeList.contains(user.email)
-                                          ? () => con.unlikePost(index)
-                                          : () => con.likePost(index),
+                          child: photoMemoList[index].suspendedStatus == true
+                              ? RawMaterialButton(
+                                  onPressed: () => con.showSuspendedDialog(
+                                      photoMemoList[index]), // Suspended sign
                                   elevation: 7.0,
-                                  fillColor:
-                                      photoMemoList[index].likeList.contains(user.email)
-                                          ? Colors.blue
-                                          : Colors.black,
-                                  child: Row(
-                                    children: [
-                                      Expanded(flex: 4, child: Icon(Icons.thumb_up)),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            photoMemoList[index]
-                                                .likeList
-                                                .length
-                                                .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15.0),
-                                          )),
-                                    ],
-                                  ),
-                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20.0)),
-                                ),
-                              ),
-                              SizedBox(width: 20.0),
-                              Expanded(
-                                flex: 1,
-                                child: RawMaterialButton(
-                                  onPressed: () =>
-                                      con.seePhotoMemo(index), // Check comment
-                                  elevation: 7.0,
-                                  fillColor: userProfile.commentsCount[
-                                              photoMemoList[index].docId] ==
-                                          null
-                                      ? Colors.black
-                                      : userProfile.commentsCount[
-                                                  photoMemoList[index].docId] ==
-                                              commentsCount[photoMemoList[index].docId]
-                                          ? Colors.black
-                                          : Colors.red,
+                                  fillColor: Colors.yellow,
                                   child: Icon(
-                                    Icons.message,
-                                    color: userProfile.commentsCount[
-                                                photoMemoList[index].docId] ==
-                                            null
-                                        ? Colors.white
-                                        : userProfile.commentsCount[
-                                                    photoMemoList[index].docId] ==
-                                                commentsCount[photoMemoList[index].docId]
-                                            ? Colors.white
-                                            : Colors.black,
+                                    Icons.warning,
+                                    color: Colors.red,
                                   ),
-                                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                  padding: EdgeInsets.fromLTRB(
+                                    MediaQuery.of(context).size.width * 0.3,
+                                    5.0,
+                                    MediaQuery.of(context).size.width * 0.3,
+                                    5.0,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(20.0)),
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: RawMaterialButton(
+                                        onPressed: photoMemoList[index]
+                                                .likeList
+                                                .contains(user.email)
+                                            ? () => con.unlikePost(index) // dislike post
+                                            : () => con.likePost(index), // like post
+                                        elevation: 7.0,
+                                        fillColor: photoMemoList[index]
+                                                .likeList
+                                                .contains(user.email)
+                                            ? Colors.blue
+                                            : Colors.black,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 4,
+                                              child: Icon(Icons.thumb_up),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                photoMemoList[index]
+                                                    .likeList
+                                                    .length
+                                                    .toString(),
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15.0),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        padding:
+                                            EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(20.0)),
+                                      ),
+                                    ),
+                                    SizedBox(width: 20.0),
+                                    Expanded(
+                                      flex: 1,
+                                      child: RawMaterialButton(
+                                        onPressed: () =>
+                                            con.seePhotoMemo(index), // Check comment
+                                        elevation: 7.0,
+                                        fillColor: userProfile.commentsCount[
+                                                    photoMemoList[index].docId] ==
+                                                null
+                                            ? Colors.black
+                                            : userProfile.commentsCount[
+                                                        photoMemoList[index].docId] ==
+                                                    commentsCount[
+                                                        photoMemoList[index].docId]
+                                                ? Colors.black
+                                                : Colors.red,
+                                        child: Icon(
+                                          Icons.message,
+                                          color: userProfile.commentsCount[
+                                                      photoMemoList[index].docId] ==
+                                                  null
+                                              ? Colors.white
+                                              : userProfile.commentsCount[
+                                                          photoMemoList[index].docId] ==
+                                                      commentsCount[
+                                                          photoMemoList[index].docId]
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                        ),
+                                        padding:
+                                            EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(20.0)),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
                         ),
                       ],
                     ),
@@ -467,6 +499,140 @@ class _Controller {
       MyDialog.info(
         context: state.context,
         title: 'Comment List Load error',
+        content: '$e',
+      );
+    }
+  }
+
+  void showSuspendedDialog(PhotoMemo p) async {
+    try {
+      showDialog(
+        context: state.context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Column(
+                  children: [
+                    Text('Warning!'),
+                  ],
+                ),
+                content: Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            color: Colors.grey[700],
+                          ),
+                          child: Container(
+                            margin: EdgeInsets.all(
+                              10.0,
+                            ),
+                            child: Text(
+                              'An admin has suspended your photo memo due to its inappropriate content. Please delete your photo memo.',
+                              style:
+                                  TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20.0,
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: EdgeInsets.only(bottom: 10.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            color: Colors.grey[500],
+                          ),
+                          child: Container(
+                            margin: EdgeInsets.all(10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                    child: Image.network(
+                                  p.photoURL,
+                                  fit: BoxFit.fitWidth,
+                                )),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    color: Colors.grey[700],
+                                  ),
+                                  child: Container(
+                                    margin: EdgeInsets.all(
+                                      10.0,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Title: ${p.title}',
+                                          style: TextStyle(
+                                              fontSize: 12.0,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          '${p.memo}',
+                                          style: TextStyle(
+                                            fontSize: 12.0,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        RawMaterialButton(
+                          onPressed: () async {
+                            await FirebaseController.deletePhotoMemo(p);
+                            await FirebaseController.deleteComment(p.docId);
+                            state.userProfile.commentsCount
+                                .removeWhere((key, value) => key == p.docId);
+                            await FirebaseController.updateProfile(state.userProfile);
+                            state.render(() => state.photoMemoList.remove(p));
+                            Navigator.pop(context);
+                          },
+                          elevation: 7.0,
+                          fillColor: Colors.red,
+                          child: Icon(Icons.delete_forever),
+                          padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                actions: [
+                  RawMaterialButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    elevation: 7.0,
+                    fillColor: Colors.black,
+                    child: Icon(Icons.subdirectory_arrow_left),
+                    padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                    shape: CircleBorder(),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Failed',
         content: '$e',
       );
     }
