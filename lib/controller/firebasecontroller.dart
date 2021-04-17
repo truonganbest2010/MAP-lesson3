@@ -282,12 +282,36 @@ class FirebaseController {
   }
 
   static Future<List<PhotoMemo>> getPhotoMemoSharedWithMe(
-      {@required String email}) async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection(Constant.PHOTOMEMO_COLLECTION)
-        .where(PhotoMemo.SHARED_WITH, arrayContains: email)
-        .orderBy(PhotoMemo.TIMESTAMP, descending: true)
-        .get();
+      {@required String email, @required String sortOption}) async {
+    QuerySnapshot querySnapshot;
+    if (sortOption == Constant.SRC_SORT_NEWEST_POST_FIRST) {
+      querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.PHOTOMEMO_COLLECTION)
+          .where(PhotoMemo.SHARED_WITH, arrayContains: email)
+          .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+          .get();
+    }
+    if (sortOption == Constant.SRC_SORT_OLDEST_POST_FIRST) {
+      querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.PHOTOMEMO_COLLECTION)
+          .where(PhotoMemo.SHARED_WITH, arrayContains: email)
+          .orderBy(PhotoMemo.TIMESTAMP, descending: false)
+          .get();
+    }
+    if (sortOption == Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS) {
+      querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.PHOTOMEMO_COLLECTION)
+          .where(PhotoMemo.SHARED_WITH, arrayContains: email)
+          .where(PhotoMemo.SHARED_WITH_ALL_FOLLOWERS, isEqualTo: true)
+          .get();
+    }
+    if (sortOption == Constant.SRC_SORT_POST_TO_A_GROUP) {
+      querySnapshot = await FirebaseFirestore.instance
+          .collection(Constant.PHOTOMEMO_COLLECTION)
+          .where(PhotoMemo.SHARED_WITH, arrayContains: email)
+          .where(PhotoMemo.SHARED_WITH_ALL_FOLLOWERS, isEqualTo: false)
+          .get();
+    }
 
     var result = <PhotoMemo>[];
     querySnapshot.docs.forEach((doc) {

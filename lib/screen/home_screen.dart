@@ -603,8 +603,8 @@ class _Controller {
 
   void goToSharedWithMe() async {
     try {
-      List<PhotoMemo> photoMemoList =
-          await FirebaseController.getPhotoMemoSharedWithMe(email: state.user.email);
+      List<PhotoMemo> photoMemoList = await FirebaseController.getPhotoMemoSharedWithMe(
+          email: state.user.email, sortOption: Constant.SRC_SORT_NEWEST_POST_FIRST);
       List<Profile> profileList = <Profile>[];
       for (var pm in photoMemoList) {
         profileList
@@ -616,6 +616,7 @@ class _Controller {
         Constant.ARG_ONE_PROFILE: state.userProfile,
         Constant.ARG_PHOTOMEMOLIST: photoMemoList,
         Constant.ARG_PROFILE_LIST: profileList,
+        "sortOption": Constant.SRC_SORT_NEWEST_POST_FIRST,
       });
     } catch (e) {
       MyDialog.info(

@@ -24,6 +24,11 @@ class Constant {
   static const SRC_ONLY_WITH = 'Only With ...';
   static const SRC_ONLY_ME = 'Only Me';
 
+  static const SRC_SORT_NEWEST_POST_FIRST = 'Newest Post First';
+  static const SRC_SORT_OLDEST_POST_FIRST = 'Oldest Post First';
+  static const SRC_SORT_POST_TO_ALL_FOLLOWERS = 'Post To All Followers';
+  static const SRC_SORT_POST_TO_A_GROUP = 'Post To A Group';
+
 // firebase storage
   static const PHOTOIMAGE_FOLDER = 'photo_images';
   static const PROFILE_PIC_FOLDER = 'profile_pics';

@@ -23,6 +23,7 @@ class _SharedWithState extends State<SharedWithScreen> {
   Profile userProfile;
   List<PhotoMemo> photoMemoList;
   List<Profile> profileList;
+  String sortOption;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _SharedWithState extends State<SharedWithScreen> {
     userProfile ??= args[Constant.ARG_ONE_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
     profileList ??= args[Constant.ARG_PROFILE_LIST];
+    sortOption ??= args["sortOption"];
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -48,7 +50,103 @@ class _SharedWithState extends State<SharedWithScreen> {
             fontSize: 25.0,
           ),
         ),
-        actions: [],
+        actions: [
+          PopupMenuButton<String>(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+            icon: Icon(Icons.sort),
+            onSelected: con.getSortOption,
+            itemBuilder: (context) => <PopupMenuEntry<String>>[
+              PopupMenuItem(
+                value: Constant.SRC_SORT_NEWEST_POST_FIRST,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.arrow_upward,
+                      color: sortOption == Constant.SRC_SORT_NEWEST_POST_FIRST
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_NEWEST_POST_FIRST,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_NEWEST_POST_FIRST
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: Constant.SRC_SORT_OLDEST_POST_FIRST,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.arrow_downward,
+                      color: sortOption == Constant.SRC_SORT_OLDEST_POST_FIRST
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_OLDEST_POST_FIRST,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_OLDEST_POST_FIRST
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.public,
+                      color: sortOption == Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: Constant.SRC_SORT_POST_TO_A_GROUP,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.group,
+                      color: sortOption == Constant.SRC_SORT_POST_TO_A_GROUP
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_POST_TO_A_GROUP,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_POST_TO_A_GROUP
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: photoMemoList.length == 0
           ? Center(
@@ -424,7 +522,11 @@ class _Controller {
         ),
       );
     } catch (e) {
-      MyDialog.info(context: state.context, title: 'Failed', content: '$e');
+      MyDialog.info(
+        context: state.context,
+        title: 'Failed',
+        content: '$e',
+      );
     }
   }
 
@@ -437,5 +539,77 @@ class _Controller {
 
   void saveReport(String value) {
     reportInput = value;
+  }
+
+  void getSortOption(String src) async {
+    try {
+      MyDialog.circularProgressStart(state.context);
+      if (src == Constant.SRC_SORT_NEWEST_POST_FIRST) {
+        state.sortOption = Constant.SRC_SORT_NEWEST_POST_FIRST;
+        List<PhotoMemo> photoMemoList = await FirebaseController.getPhotoMemoSharedWithMe(
+            email: state.user.email, sortOption: Constant.SRC_SORT_NEWEST_POST_FIRST);
+        List<Profile> profileList = <Profile>[];
+        for (var pm in photoMemoList) {
+          profileList
+              .add(await FirebaseController.getOneProfileDatabase(email: pm.createdBy));
+        }
+        MyDialog.circularProgressStop(state.context);
+        state.render(() {
+          state.photoMemoList = photoMemoList;
+          state.profileList = profileList;
+        });
+      }
+      if (src == Constant.SRC_SORT_OLDEST_POST_FIRST) {
+        state.sortOption = Constant.SRC_SORT_OLDEST_POST_FIRST;
+        List<PhotoMemo> photoMemoList = await FirebaseController.getPhotoMemoSharedWithMe(
+            email: state.user.email, sortOption: Constant.SRC_SORT_OLDEST_POST_FIRST);
+        List<Profile> profileList = <Profile>[];
+        for (var pm in photoMemoList) {
+          profileList
+              .add(await FirebaseController.getOneProfileDatabase(email: pm.createdBy));
+        }
+        MyDialog.circularProgressStop(state.context);
+        state.render(() {
+          state.photoMemoList = photoMemoList;
+          state.profileList = profileList;
+        });
+      }
+      if (src == Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS) {
+        state.sortOption = Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS;
+        List<PhotoMemo> photoMemoList = await FirebaseController.getPhotoMemoSharedWithMe(
+            email: state.user.email, sortOption: Constant.SRC_SORT_POST_TO_ALL_FOLLOWERS);
+        List<Profile> profileList = <Profile>[];
+        for (var pm in photoMemoList) {
+          profileList
+              .add(await FirebaseController.getOneProfileDatabase(email: pm.createdBy));
+        }
+        MyDialog.circularProgressStop(state.context);
+        state.render(() {
+          state.photoMemoList = photoMemoList;
+          state.profileList = profileList;
+        });
+      }
+      if (src == Constant.SRC_SORT_POST_TO_A_GROUP) {
+        state.sortOption = Constant.SRC_SORT_POST_TO_A_GROUP;
+        List<PhotoMemo> photoMemoList = await FirebaseController.getPhotoMemoSharedWithMe(
+            email: state.user.email, sortOption: Constant.SRC_SORT_POST_TO_A_GROUP);
+        List<Profile> profileList = <Profile>[];
+        for (var pm in photoMemoList) {
+          profileList
+              .add(await FirebaseController.getOneProfileDatabase(email: pm.createdBy));
+        }
+        MyDialog.circularProgressStop(state.context);
+        state.render(() {
+          state.photoMemoList = photoMemoList;
+          state.profileList = profileList;
+        });
+      }
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Failed',
+        content: '$e',
+      );
+    }
   }
 }
