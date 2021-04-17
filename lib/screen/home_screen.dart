@@ -549,6 +549,7 @@ class _Controller {
           profileList
               .add(await FirebaseController.getOneProfileDatabase(email: f.follower));
       }
+      profileList.sort((a, b) => a.name.compareTo(b.name));
       MyDialog.circularProgressStop(state.context);
       await Navigator.pushNamed(state.context, DisplayFollowerScreen.routeName,
           arguments: {
@@ -557,6 +558,7 @@ class _Controller {
             Constant.ARG_PROFILE_LIST: profileList,
             Constant.ARG_PENDING_REQUEST_LIST: pendingRequestList,
             "NOTIFICATION": notification,
+            "sortOption": Constant.SRC_SORT_BY_NAME_A_Z,
           });
       state.followerList = await FirebaseController.getFollowerList(
           email: state.user.email, pendingStatus: false);

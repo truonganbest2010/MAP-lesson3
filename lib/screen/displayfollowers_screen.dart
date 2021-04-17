@@ -24,6 +24,8 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
   List<Follow> pendingRequestList;
   bool notification;
 
+  String sortOption;
+
   @override
   void initState() {
     super.initState();
@@ -40,12 +42,104 @@ class _DisplayFollowerState extends State<DisplayFollowerScreen> {
     profileList ??= args[Constant.ARG_PROFILE_LIST];
     pendingRequestList ??= args[Constant.ARG_PENDING_REQUEST_LIST];
     notification ??= args["NOTIFICATION"];
+    sortOption ??= args["sortOption"];
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(
-            icon: Icon(Icons.person),
-            onPressed: () {},
+          PopupMenuButton<String>(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+            icon: Icon(Icons.sort),
+            onSelected: ctrl.getSortOption,
+            itemBuilder: (context) => <PopupMenuEntry<String>>[
+              PopupMenuItem(
+                value: Constant.SRC_SORT_BY_NAME_A_Z,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.arrow_upward,
+                      color: sortOption == Constant.SRC_SORT_BY_NAME_A_Z
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_BY_NAME_A_Z,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_BY_NAME_A_Z
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: Constant.SRC_SORT_BY_NAME_Z_A,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.arrow_downward,
+                      color: sortOption == Constant.SRC_SORT_BY_NAME_Z_A
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_BY_NAME_Z_A,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_BY_NAME_Z_A
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: Constant.SRC_SORT_BY_EMAIL_A_Z,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.arrow_upward,
+                      color: sortOption == Constant.SRC_SORT_BY_EMAIL_A_Z
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_BY_EMAIL_A_Z,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_BY_EMAIL_A_Z
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: Constant.SRC_SORT_BY_EMAIL_Z_A,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.arrow_downward,
+                      color: sortOption == Constant.SRC_SORT_BY_EMAIL_Z_A
+                          ? Colors.blue
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      Constant.SRC_SORT_BY_EMAIL_Z_A,
+                      style: TextStyle(
+                        color: sortOption == Constant.SRC_SORT_BY_EMAIL_Z_A
+                            ? Colors.blue
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         title: Text(
@@ -210,9 +304,12 @@ class _Controller {
       for (var p in followerList) {
         pList.add(await FirebaseController.getOneProfileDatabase(email: p.follower));
       }
-      state.profileList = pList;
-      state.notification = false;
-      state.render(() {});
+      pList.sort((a, b) => a.name.compareTo(b.name));
+
+      state.render(() {
+        state.profileList = pList;
+        state.notification = false;
+      });
     } catch (e) {
       MyDialog.info(
         context: state.context,
@@ -229,6 +326,35 @@ class _Controller {
         Constant.ARG_USER: state.user,
         Constant.ARG_ONE_PROFILE: prf,
       });
+    } catch (e) {
+      MyDialog.info(
+        context: state.context,
+        title: 'Oops',
+        content: '$e',
+      );
+    }
+  }
+
+  void getSortOption(String src) async {
+    try {
+      if (src == Constant.SRC_SORT_BY_NAME_A_Z) {
+        state.sortOption = Constant.SRC_SORT_BY_NAME_A_Z;
+        state.render(() => state.profileList.sort((a, b) => a.name.compareTo(b.name)));
+      }
+      if (src == Constant.SRC_SORT_BY_NAME_Z_A) {
+        state.sortOption = Constant.SRC_SORT_BY_NAME_Z_A;
+        state.render(() => state.profileList.sort((a, b) => b.name.compareTo(a.name)));
+      }
+      if (src == Constant.SRC_SORT_BY_EMAIL_A_Z) {
+        state.sortOption = Constant.SRC_SORT_BY_EMAIL_A_Z;
+        state.render(
+            () => state.profileList.sort((a, b) => a.createdBy.compareTo(b.createdBy)));
+      }
+      if (src == Constant.SRC_SORT_BY_EMAIL_Z_A) {
+        state.sortOption = Constant.SRC_SORT_BY_EMAIL_Z_A;
+        state.render(
+            () => state.profileList.sort((a, b) => b.createdBy.compareTo(a.createdBy)));
+      }
     } catch (e) {
       MyDialog.info(
         context: state.context,

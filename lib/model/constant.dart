@@ -29,6 +29,12 @@ class Constant {
   static const SRC_SORT_POST_TO_ALL_FOLLOWERS = 'Post To All Followers';
   static const SRC_SORT_POST_TO_A_GROUP = 'Post To A Group';
 
+  static const SRC_SORT_BY_NAME_A_Z = 'Sort By Name A-Z';
+  static const SRC_SORT_BY_NAME_Z_A = 'Sort By Name Z-A';
+  static const SRC_SORT_BY_EMAIL_A_Z = 'Sort By Email A-Z';
+  static const SRC_SORT_BY_EMAIL_Z_A = 'Sort By Email Z-A';
+  static const SRC_SORT_RESET = 'Reset';
+
 // firebase storage
   static const PHOTOIMAGE_FOLDER = 'photo_images';
   static const PROFILE_PIC_FOLDER = 'profile_pics';
