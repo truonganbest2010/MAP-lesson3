@@ -500,6 +500,13 @@ class _Controller {
       tempReport.photoMemoId = state.photoMemoList[index].docId;
       tempReport.report = reportInput;
       tempReport.timestamp = DateTime.now();
+      List<Profile> profileList =
+          await FirebaseController.getProfileList(email: state.user.email);
+      for (var p in profileList) {
+        if (p.admin == true) {
+          tempReport.grantedPermission.add(p.createdBy);
+        }
+      }
       await FirebaseController.createReport(tempReport);
       formKey.currentState.reset();
       showDialog(
